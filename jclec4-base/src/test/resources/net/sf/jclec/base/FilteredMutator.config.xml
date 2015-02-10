@@ -1,0 +1,4 @@
+<filtered-mutator>
+	<decorated type="net.sf.jclec.binarray.mut.OneLocusMutator"/>
+	<mutation-prob>0.35</mutation-prob>
+</filtered-mutator>

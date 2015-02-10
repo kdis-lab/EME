@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ExternalProjectImportWizard">
+		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_NESTED_PROJECTS"/>
+		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
+			<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace/EvolutivoEnsembleMLCTablev2"/>
+			<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace/jclec4-classification"/>
+			<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace/jclec4-base"/>
+		</list>
+		<list key="WizardProjectsImportPage.STORE_ARCHIVES">
+			<item value=""/>
+		</list>
+	</section>
+	<section name="SaveAsDialogSettings">
+		<item value="613" key="DIALOG_WIDTH"/>
+		<item value="55" key="DIALOG_Y_ORIGIN"/>
+		<item value="596" key="DIALOG_HEIGHT"/>
+		<item value="461" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+	</section>
+</section>
