@@ -160,10 +160,10 @@ public class EnsembleAlgorithmTable extends EnsembleAlgorithm {
 			}
 		}
 		
+		
 		// If maximum number of generations is exceeded, evolution is finished
 		if (generation >= maxOfGenerations)
 		{
-			
 			byte[] genotype = ((BinArrayIndividual) bset.get(0)).getGenotype();
 
 			classifier = new EnsembleClassifierTable(getNumberLabelsClassifier(), getNumberClassifiers(), getPredictionThreshold(), getVariable(), new LabelPowerset(new J48()), genotype, tableClassifiers);

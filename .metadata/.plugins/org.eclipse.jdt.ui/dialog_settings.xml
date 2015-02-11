@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+	<item value="2" key="TypeHierarchyViewPart.hierarchyview"/>
 	<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace/jclec4-base/libs" key="org.eclipse.jdt.ui.lastextjar"/>
+	<item value="500" key="CallHierarchyViewPart.ratio3"/>
+	<item value="500" key="CallHierarchyViewPart.ratio1"/>
+	<item value="3" key="CallHierarchyViewPart.orientation"/>
+	<item value="false" key="TypeHierarchyViewPart.qualifiednames"/>
+	<item value="3" key="TypeHierarchyViewPart.orientation"/>
+	<item value="1" key="SearchScopeActionGroup.search_scope_type"/>
+	<item value="2" key="CallHierarchyViewPart.field_mode"/>
+	<item value="false" key="TypeHierarchyViewPart.linkeditors"/>
+	<item value="0" key="CallHierarchyViewPart.call_mode"/>
+	<list key="SearchScopeActionGroup.working_set">
+	</list>
 	<section name="OptionalMessageDialog.hide.">
 	</section>
 	<section name="org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart">
@@ -18,12 +30,13 @@
 		<item value="3" key="pageIndex"/>
 	</section>
 	<section name="FatJarPackageWizard">
-		<item value="/home/jose/EvolutivoEnsembleMLCv2_HLPhi.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
+		<item value="/home/jose/EvolutivoEnsembleMLCv2_Validation.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
 		<item value="New_configuration (1) - jclec4-base" key="FatJarPackageWizardPage.LAUNCH_CONFIGURATION_SELECTION_NAME"/>
 		<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace" key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION"/>
 		<item value="false" key="FatJarPackageWizardPage.ANTSCRIPT_SAVE"/>
 		<item value="2" key="FatJarPackageWizardPage.LIBRARY_HANDLING"/>
 		<list key="FatJarPackageWizardPage.DESTINATION_NAMES_ID">
+			<item value="/home/jose/EvolutivoEnsembleMLCv2_Validation.jar"/>
 			<item value="/home/jose/EvolutivoEnsembleMLCv2_HLPhi.jar"/>
 			<item value="/home/jose/EvolutivoEnsembleMLCv2_HL.jar"/>
 			<item value="/home/jose/EvolutivoEnsemblev2HL.jar"/>
@@ -34,5 +47,13 @@
 		</list>
 	</section>
 	<section name="quick_assist_proposal_size">
+	</section>
+	<section name="SearchInDialog">
+		<item value="true" key="SearchInJRE"/>
+		<item value="true" key="SearchInProjects"/>
+		<item value="true" key="SearchInAppLibs"/>
+		<item value="true" key="SearchInSources"/>
+	</section>
+	<section name="CallHierarchySearchScope">
 	</section>
 </section>

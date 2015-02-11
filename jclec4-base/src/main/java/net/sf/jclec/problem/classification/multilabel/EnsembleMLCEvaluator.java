@@ -67,6 +67,8 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	
 	protected MultiLabelInstances datasetTrain;
 	
+	protected MultiLabelInstances datasetValidation;
+	
 	protected int numberLabelsClassifier;
 	
 	protected int numberClassifiers;
@@ -76,6 +78,8 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	protected boolean variable;
 	
 	protected boolean maximize = true;
+	
+	public MultiLabelLearner baseLearner;
 	
 	protected Comparator<IFitness> COMPARATOR = new ValueFitnessComparator(!maximize);
 	
@@ -100,13 +104,22 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		return numberClassifiers;
 	}
 	
-	public MultiLabelInstances getDataset()
+	public MultiLabelInstances getDatasetTrain()
 	{
 		return datasetTrain;
 	}
 	
-	public void setDataset(MultiLabelInstances datasetTrain) {
+	public MultiLabelInstances getDatasetValidation()
+	{
+		return datasetValidation;
+	}
+	
+	public void setDatasetTrain(MultiLabelInstances datasetTrain) {
 		this.datasetTrain = datasetTrain;
+	}
+	
+	public void setDatasetValidation(MultiLabelInstances datasetValidation) {
+		this.datasetValidation = datasetValidation;
 	}
 
 	public void setNumberClassifiers(int numberClassifiers) {
@@ -123,6 +136,11 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	
 	public void setVariable(boolean variable) {
 		this.variable = variable;
+	}
+	
+	public void setBaseLearner(MultiLabelLearner baseLearner)
+	{
+		this.baseLearner = baseLearner;
 	}
 	
 	public Comparator<IFitness> getComparator() {
@@ -150,15 +168,16 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
         	    
         	      List<Measure> measures = new ArrayList<Measure>();  	       
     	       	  measures = prepareMeasures(classifier, datasetTrain);
-    	       	  Evaluation results = eval.evaluate(classifier, datasetTrain, measures);    
+    	       	  Evaluation results = eval.evaluate(classifier, datasetValidation, measures);    
         	    
 			       for (Measure m : results.getMeasures())
 			       {	   
 			    	   System.out.println(m.getName()+"  "+m.getClass()+"  "+m.getValue());
-			    	   //The fitness is the MacroFMeasure
+			    	   //The fitness is the HammingLoss
 			    	   if (m.getClass() == HammingLoss.class)
 			    	   {
-					       ind.setFitness(new SimpleValueFitness(m.getValue()));
+			    		   //1-HLoss is to maximize
+					       ind.setFitness(new SimpleValueFitness(1 - m.getValue()));
 					   }
 			       }   
 								

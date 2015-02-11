@@ -307,12 +307,17 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		String testReportFilename = "TestDataReport.txt";
 		// Train report name
 		String trainReportFilename = "TrainDataReport.txt";
+		// Validation report name
+		String validationReportFilename = "ValidationDataReport.txt";
 		// Test Report file
 		File testReportFile = new File(reportDirectory, testReportFilename);
 		// Train Report file
 		File trainReportFile = new File(reportDirectory, trainReportFilename);
+		// Validation Report file
+		File validationReportFile = new File(reportDirectory, validationReportFilename);
 		
 		classify(algorithm.getDatasetTrain(), algorithm.getClassifier(), trainReportFile);
+		classify(algorithm.getDatasetValidation(), algorithm.getClassifier(), validationReportFile);
 		classify(algorithm.getDatasetTest(), algorithm.getClassifier(), testReportFile);
 	}
 
@@ -354,8 +359,11 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
     	String testReportFilename = "TestClassificationReport.txt";
         // Train report name
     	String trainReportFilename = "TrainClassificationReport.txt";
+    	// Validation report name
+    	String validationReportFilename = "ValidationClassificationReport.txt";
            	
         MultiLabelInstances datasetTrain = algorithm.getDatasetTrain();
+        MultiLabelInstances datasetValidation = algorithm.getDatasetValidation();
         MultiLabelInstances datasetTest = algorithm.getDatasetTest();        
         
         //Build the classifier ENSURE IT WAS INICIALIZED WITH THE GENOTYPE!!!
@@ -375,12 +383,16 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		
         // Global report for train
         String nameFileTrain = aux +getGlobalReportName() + "-train.txt";
+        
+     // Global report for validation
+        String nameFileValidation = aux +getGlobalReportName() + "-validation.txt";
     				
     	// Global report for test
         String nameFileTest = aux +getGlobalReportName() + "-test.txt";
 
         
         doReport(trainReportFilename, nameFileTrain, datasetTrain, algorithm,  classifier);
+        doReport(validationReportFilename, nameFileValidation, datasetValidation, algorithm,  classifier);
         doReport(testReportFilename, nameFileTest, datasetTest, algorithm, classifier);
         
        } 

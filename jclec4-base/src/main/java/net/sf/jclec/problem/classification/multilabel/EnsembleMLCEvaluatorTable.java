@@ -2,8 +2,13 @@ package net.sf.jclec.problem.classification.multilabel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.binarray.BinArrayIndividual;
@@ -30,8 +35,6 @@ public class EnsembleMLCEvaluatorTable extends EnsembleMLCEvaluator {
 	public Hashtable<String, Double> tableFitness;
 	
 	double [][] phiMatrix;
-	
-	//protected boolean maximize = false;
 	
 	private boolean fitnessWithIndividualDiversity = false;
 	
@@ -97,7 +100,7 @@ public class EnsembleMLCEvaluatorTable extends EnsembleMLCEvaluator {
   	       	  	}
   	       	  	else
   	       	  	{
-  	       	  		results = eval.evaluate(classifierTable, datasetTrain, measures);
+  	       	  		results = eval.evaluate(classifierTable, datasetValidation, measures);
   	       	  		String mName = new String();
   	       	  		mName = "Hamming Loss";
   	       	  		
@@ -105,13 +108,13 @@ public class EnsembleMLCEvaluatorTable extends EnsembleMLCEvaluator {
   	       	  		{
   	       	  			int max = 0;
 	  				
-		  				for(int i=0; i<getDataset().getNumLabels(); i++)
+		  				for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
 		  				{
 		  					int sum = 0;
 		  					
 		  					for(int j=0; j<getNumberClassifiers(); j++)
 		  					{
-		  						sum = sum + genotype[i+j*getDataset().getNumLabels()];
+		  						sum = sum + genotype[i+j*getDatasetTrain().getNumLabels()];
 		  					}
 		  					
 		  					//System.out.println("sum: " + sum);

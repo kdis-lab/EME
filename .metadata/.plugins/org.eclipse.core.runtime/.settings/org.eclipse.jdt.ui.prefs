@@ -1,4 +1,4 @@
-content_assist_lru_history=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><history maxLHS\="100" maxRHS\="10"/>
+content_assist_lru_history=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?><history maxLHS\="100" maxRHS\="10"><lhs name\="mulan.data.MultiLabelInstances"><rhs name\="mulan.data.MultiLabelInstances"/></lhs><lhs name\="mulan.data.Stratification"><rhs name\="mulan.data.IterativeStratification"/><rhs name\="mulan.data.LabelPowersetStratification"/></lhs><lhs name\="weka.core.TechnicalInformationHandler"><rhs name\="mulan.data.IterativeStratification"/><rhs name\="mulan.data.LabelPowersetStratification"/></lhs><lhs name\="mulan.data.IterativeStratification"><rhs name\="mulan.data.IterativeStratification"/></lhs><lhs name\="mulan.data.LabelPowersetStratification"><rhs name\="mulan.data.LabelPowersetStratification"/></lhs><lhs name\="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"><rhs name\="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"/></lhs></history>
 content_assist_number_of_computers=13
 content_assist_proposals_background=255,255,255
 content_assist_proposals_foreground=60,60,60

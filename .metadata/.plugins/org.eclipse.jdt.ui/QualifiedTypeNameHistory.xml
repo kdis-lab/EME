@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<qualifiedTypeNameHistroy/>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="mulan.data.MultiLabelInstances"/>
+<fullyQualifiedTypeName name="mulan.data.IterativeStratification"/>
+<fullyQualifiedTypeName name="mulan.data.LabelPowersetStratification"/>
+<fullyQualifiedTypeName name="java.util.Vector"/>
+<fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayIndividual"/>
+<fullyQualifiedTypeName name="java.util.HashSet"/>
+<fullyQualifiedTypeName name="mulan.classifier.MultiLabelLearner"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"/>
+</qualifiedTypeNameHistroy>

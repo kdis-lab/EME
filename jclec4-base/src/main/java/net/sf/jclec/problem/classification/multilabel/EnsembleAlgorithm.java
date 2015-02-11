@@ -1,5 +1,7 @@
 package net.sf.jclec.problem.classification.multilabel;
 
+import mulan.data.IterativeStratification;
+import mulan.data.LabelPowersetStratification;
 import mulan.data.MultiLabelInstances;
 import mulan.classifier.transformation.LabelPowerset;
 import weka.classifiers.trees.J48;
@@ -27,6 +29,8 @@ public class EnsembleAlgorithm extends SGE
 	
 	private MultiLabelInstances datasetTrain;
 	
+	private MultiLabelInstances datasetValidation;
+	
 	private MultiLabelInstances datasetTest;
 	
 	private EnsembleClassifier classifier;
@@ -38,6 +42,8 @@ public class EnsembleAlgorithm extends SGE
 	private double predictionThreshold;
 	
 	private boolean variable; //if true the individual will have [2..numberLabelsClassifier] 1s
+	
+	private boolean validationSet;
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -66,6 +72,11 @@ public class EnsembleAlgorithm extends SGE
 		return datasetTrain;
 	}
 	
+	public MultiLabelInstances getDatasetValidation()
+	{
+		return datasetValidation;
+	}
+	
 	public MultiLabelInstances getDatasetTest()
 	{
 		return datasetTest;
@@ -90,6 +101,11 @@ public class EnsembleAlgorithm extends SGE
 	{
 		return variable;
 	}
+	
+	public boolean isValidationSet()
+	{
+		return validationSet;
+	}
 
 	
 	/**
@@ -107,8 +123,32 @@ public class EnsembleAlgorithm extends SGE
 			String datasetTestFileName = configuration.getString("dataset.test-dataset");
 			String datasetXMLFileName = configuration.getString("dataset.xml");
 			
-			datasetTrain = new MultiLabelInstances(datasetTrainFileName, datasetXMLFileName);
+			MultiLabelInstances fullDatasetTrain = new MultiLabelInstances(datasetTrainFileName, datasetXMLFileName);
 			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);
+			
+			//Use or not a validation set to evaluate individuals
+			validationSet = configuration.getBoolean("validation-set");
+			if(validationSet)
+			{
+				System.out.println("Use a validation set to evaluate individuals");
+				// 75% for train ; 100% for validation
+				IterativeStratification strat = new IterativeStratification();
+				MultiLabelInstances [] m = strat.stratify(fullDatasetTrain, 4);
+				datasetTrain = m[0];
+				datasetTrain.getDataSet().addAll(m[1].getDataSet());
+				datasetTrain.getDataSet().addAll(m[2].getDataSet());
+//				datasetTrain.getDataSet().addAll(m[3].getDataSet());
+//				datasetValidation = m[4];
+				datasetValidation = datasetTrain;
+				datasetValidation.getDataSet().addAll(m[3].getDataSet());
+			}
+			else
+			{
+				System.out.println("Evaluate individuals with all train set");
+				datasetTrain = fullDatasetTrain;
+				datasetValidation = datasetTrain;
+			}
+			
 			
 			// Obtain settings
 			int numberLabels = datasetTrain.getNumLabels();
@@ -116,7 +156,7 @@ public class EnsembleAlgorithm extends SGE
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
 			variable = configuration.getBoolean("variable");
-					
+			
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
 			((EnsembleMLCCreator) provider).setNumberLabelsClassifier(numberLabelsClassifier);
@@ -124,7 +164,8 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCCreator) provider).setVariable(variable); 
 			
 			// Set evaluator settings			
-			((EnsembleMLCEvaluator) evaluator).setDataset(datasetTrain);
+			((EnsembleMLCEvaluator) evaluator).setDatasetTrain(datasetTrain);
+			((EnsembleMLCEvaluator) evaluator).setDatasetValidation(datasetValidation);
 			((EnsembleMLCEvaluator) evaluator).setNumberClassifiers(numberClassifiers);
 			((EnsembleMLCEvaluator) evaluator).setNumberLabelsClassifier(numberLabelsClassifier);
 			((EnsembleMLCEvaluator) evaluator).setPredictionThreshold(predictionThreshold);
