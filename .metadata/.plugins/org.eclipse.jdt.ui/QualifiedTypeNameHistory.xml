@@ -2,10 +2,14 @@
 <qualifiedTypeNameHistroy>
 <fullyQualifiedTypeName name="mulan.data.MultiLabelInstances"/>
 <fullyQualifiedTypeName name="mulan.data.IterativeStratification"/>
-<fullyQualifiedTypeName name="mulan.data.LabelPowersetStratification"/>
 <fullyQualifiedTypeName name="java.util.Vector"/>
 <fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayIndividual"/>
 <fullyQualifiedTypeName name="java.util.HashSet"/>
 <fullyQualifiedTypeName name="mulan.classifier.MultiLabelLearner"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover"/>
+<fullyQualifiedTypeName name="javax.naming.Context"/>
+<fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGenFactory"/>
+<fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGen"/>
+<fullyQualifiedTypeName name="mulan.data.LabelPowersetStratification"/>
 </qualifiedTypeNameHistroy>

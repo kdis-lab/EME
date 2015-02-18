@@ -3,7 +3,6 @@ package net.sf.jclec.problem.classification.multilabel;
 import mulan.data.InvalidDataFormatException;
 import mulan.data.MultiLabelInstances;
 
-import java.util.Random;
 import java.util.HashSet;
 
 import weka.core.Instance;
@@ -15,6 +14,7 @@ import mulan.classifier.ModelInitializationException;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
 import mulan.classifier.meta.MultiLabelMetaLearner;
+import net.sf.jclec.util.random.IRandGen;
 
 @SuppressWarnings("serial")
 
@@ -44,7 +44,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	
 	protected byte genotype[];
 	
-	protected Random rnd;	
+	protected IRandGen randGen;
 	
 
 	/////////////////////////////////////////////////////////////////
@@ -68,6 +68,17 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.threshold = threshold;
 	    this.variable = variable;
 		this.genotype = genotype;
+	}
+	
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, IRandGen randGen)
+	{
+		super(baseLearner);
+		this.maxSubsetSize = maxSubsetSize;
+		this.numClassifiers = numClassifiers;
+		this.threshold = threshold;
+	    this.variable = variable;
+		this.genotype = genotype;
+		this.randGen = randGen;
 	}
 	
 	public EnsembleClassifier(int maxSubsetSize, double threshold, boolean variable, MultiLabelLearner baseLearner)
@@ -221,7 +232,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	   
 	   Ensemble = new MultiLabelLearner[numClassifiers];		
 	   Filters = new Remove[numClassifiers];		
-	   rnd = new Random(System.currentTimeMillis());
 	   
 	   
 	   if(genotype==null)
@@ -348,7 +358,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		SizeSubsets = new int[numClassifiers];
 	    
 		HashSet<String> Combinations = new HashSet<String>();
-		Random rand = new Random(rnd.nextInt());
 		   
 		//For each classifier in the ensemble
 		for(int model=0; model<numClassifiers;)
@@ -356,7 +365,10 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   if (variable == true)
 		   {SizeSubsets[model]=maxSubsetSize;}
 		   else
-		   {SizeSubsets[model]= 2 + rand.nextInt(maxSubsetSize-2+1);}
+		   {
+//			   SizeSubsets[model]= 2 + rand.nextInt(maxSubsetSize-2+1);
+			   SizeSubsets[model]= 2 + randGen.choose(maxSubsetSize-2+1);
+		   }
 		   
 		   //Inicializations
 		   StringBuffer comb2 = new StringBuffer("");
@@ -371,7 +383,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   for(int label=0; label<SizeSubsets[model]; )
 		   {
                //Random selection of one label		
-               int randomLabel=rand.nextInt(numLabels);
+//               int randomLabel=rand.nextInt(numLabels);
+			   int randomLabel=randGen.choose(numLabels);
                if(!visited[randomLabel])
                {	   
 			      visited[randomLabel]=true;

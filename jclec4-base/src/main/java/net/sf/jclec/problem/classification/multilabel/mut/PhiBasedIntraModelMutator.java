@@ -104,7 +104,6 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 			
 			double rand = randgen.uniform(0, acc[numberLabels-1]);
 
-
 			for(int j=0; j<numberLabels; j++)
 			{
 				if(acc[j] >= rand)

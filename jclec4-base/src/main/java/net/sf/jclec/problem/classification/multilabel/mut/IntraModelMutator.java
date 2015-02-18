@@ -68,7 +68,6 @@ public class IntraModelMutator extends BinArrayMutator
 			mgenome[mp1] = mgenome[mp2];
 			mgenome[mp2] = aux;
 		}
-		//TODO Comprobar que el modelo no se repite
 		
 		sonsBuffer.add(species.createIndividual(mgenome));
 	}

@@ -136,27 +136,34 @@ public class EnsembleMLCEvaluatorTable extends EnsembleMLCEvaluator {
   	       	  			double measure = getMeasureValue(mName, results);
   	       	  			//measure is Hloss -> 1-Hloss is to maximize
   	       	  			measure = 1 - measure;
-//  	       	  			double phiTotal = 0;
-//  	       	  			
-//  	       	  			//Calculate sumPhi for all base classifiers
-//  	       	  			for(int c=0; c<getNumberClassifiers(); c++)
-//  	       	  			{
-//  	       	  				double sumPhi = 0;
-//  	       	  				//calculate sum of phi label correlations for a base classifier
-//  	       	  				for(int i=0; i<getDataset().getNumLabels()-1; i++)
-//  	       	  				{
-//  	       	  					for(int j=i+1; j<getDataset().getNumLabels(); j++)
-//  	       	  					{
-//  	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-//  	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
-//  	       	  					}
-//  	       	  				}
-//  	       	  				
-//  	       	  				phiTotal += sumPhi;
-//  	       	  			}
-//  	       	  			
-//  	       	  			fitness = measure + phiTotal;
   	       	  			fitness = measure;	
+  	       	  			
+  	       	  			/*
+  	       	  			 * Introduces Phi correlation in fitness
+  	       	  			
+  	       	  			double phiTotal = 0;
+  	       	  			
+  	       	  			//Calculate sumPhi for all base classifiers
+  	       	  			for(int c=0; c<getNumberClassifiers(); c++)
+  	       	  			{
+  	       	  				double sumPhi = 0;
+  	       	  				//calculate sum of phi label correlations for a base classifier
+  	       	  				for(int i=0; i<getDataset().getNumLabels()-1; i++)
+  	       	  				{
+  	       	  					for(int j=i+1; j<getDataset().getNumLabels(); j++)
+  	       	  					{
+  	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
+  	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
+  	       	  					}
+  	       	  				}
+  	       	  				
+  	       	  				phiTotal += sumPhi;
+  	       	  			}
+  	       	  			
+  	       	  			fitness = measure + phiTotal;
+  	       	  			
+  	       	  			*/
+  	       	  			
   	       	  		}	  	       	  	
 
 	  				
@@ -189,7 +196,11 @@ public class EnsembleMLCEvaluatorTable extends EnsembleMLCEvaluator {
 		
 		if(mvalue == -1)
 		{
-			System.out.println("Error, nombre de medida de evaluacion incorrecto");
+			System.out.println("Incorrect name of the measure. Correct are: ");
+			for(int i=0; i<results.getMeasures().size(); i++)
+			{
+				System.out.println("   " + results.getMeasures().get(i).getName());
+			}
 			System.exit(-1);
 		}
 		

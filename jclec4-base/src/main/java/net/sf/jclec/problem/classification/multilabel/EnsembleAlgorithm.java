@@ -1,14 +1,14 @@
 package net.sf.jclec.problem.classification.multilabel;
 
+
 import mulan.data.IterativeStratification;
-import mulan.data.LabelPowersetStratification;
 import mulan.data.MultiLabelInstances;
 import mulan.classifier.transformation.LabelPowerset;
 import weka.classifiers.trees.J48;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
-import net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover;
+import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
 
 import org.apache.commons.configuration.Configuration;
 
@@ -43,7 +43,7 @@ public class EnsembleAlgorithm extends SGE
 	
 	private boolean variable; //if true the individual will have [2..numberLabelsClassifier] 1s
 	
-	private boolean validationSet;
+	private boolean isValidationSet;
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -102,9 +102,9 @@ public class EnsembleAlgorithm extends SGE
 		return variable;
 	}
 	
-	public boolean isValidationSet()
+	public boolean getIsValidationSet()
 	{
-		return validationSet;
+		return isValidationSet;
 	}
 
 	
@@ -127,24 +127,28 @@ public class EnsembleAlgorithm extends SGE
 			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);
 			
 			//Use or not a validation set to evaluate individuals
-			validationSet = configuration.getBoolean("validation-set");
-			if(validationSet)
+			isValidationSet = configuration.getBoolean("validation-set");
+			if(isValidationSet)
 			{
 				System.out.println("Use a validation set to evaluate individuals");
-				// 75% for train ; 100% for validation
 				IterativeStratification strat = new IterativeStratification();
+//				LabelPowersetStratification strat = new LabelPowersetStratification();
+				// 75% for train ; 100% for validation
 				MultiLabelInstances [] m = strat.stratify(fullDatasetTrain, 4);
+				//Train set have 3 folds
 				datasetTrain = m[0];
 				datasetTrain.getDataSet().addAll(m[1].getDataSet());
 				datasetTrain.getDataSet().addAll(m[2].getDataSet());
-//				datasetTrain.getDataSet().addAll(m[3].getDataSet());
-//				datasetValidation = m[4];
+
+				//Validation set have all 4 folds
 				datasetValidation = datasetTrain;
 				datasetValidation.getDataSet().addAll(m[3].getDataSet());
+
 			}
 			else
 			{
 				System.out.println("Evaluate individuals with all train set");
+				//Train and validation set are the same, the full set
 				datasetTrain = fullDatasetTrain;
 				datasetValidation = datasetTrain;
 			}
@@ -173,8 +177,8 @@ public class EnsembleAlgorithm extends SGE
 			
 			// Set genetic operator settingsS
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);
-			((ModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
-			
+			((UniformModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -199,7 +203,7 @@ public class EnsembleAlgorithm extends SGE
 			
 			byte[] genotype = ((BinArrayIndividual) bset.get(0)).getGenotype();
 
-			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype);
+			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, randGenFactory.createRandGen());
 			
 			try {	
 				classifier.build(datasetTrain);

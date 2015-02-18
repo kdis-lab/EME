@@ -6,7 +6,9 @@ import java.util.List;
 
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.binarray.BinArrayIndividual;
+import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
+import net.sf.jclec.util.random.IRandGen;
 
 import org.apache.commons.configuration.Configuration;
 
@@ -89,26 +91,27 @@ public class EnsembleAlgorithmTable extends EnsembleAlgorithm {
 	/////////////////////////////////////////////////////////////////
 	
 	protected void doInit()
-	{
-		Statistics s = new Statistics();
-
-		double [][] phi = new double[getDatasetTrain().getNumLabels()][getDatasetTrain().getNumLabels()];
-		
-		try {
-			phi = s.calculatePhi(getDatasetTrain());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		s.printPhiCorrelations();		
-		
-		((EnsembleMLCEvaluatorTable) evaluator).setPhiMatrix(phi);
-		
+	{		
 		// Send Phi matrix to the mutator if it needs it
 		if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
 		{
+			Statistics s = new Statistics();
+
+			double [][] phi = new double[getDatasetTrain().getNumLabels()][getDatasetTrain().getNumLabels()];
+			
+			try {
+				phi = s.calculatePhi(getDatasetTrain());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+//			s.printPhiCorrelations();	
+			
+//			((EnsembleMLCEvaluatorTable) evaluator).setPhiMatrix(phi);
+			
 			((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
-		}		
+			
+		}
 		
 		super.doInit();
 	}
@@ -150,12 +153,14 @@ public class EnsembleAlgorithmTable extends EnsembleAlgorithm {
 			
 			if((populationDiversity < 0.5) && (getMutationProb() < 0.4))
 			{
-				System.out.println("Incrementar probabilidad de mutación");
+				//The mutation probability never is greater than 0.4
+				System.out.println("Increase mutation probability -> " + (getMutationProb() + 0.05));
 				setMutationProb(getMutationProb() + 0.05);
 			}
-			else if((populationDiversity > 0.85) && (getMutationProb() >= 0.2))
+			else if((populationDiversity > 0.85) && (getMutationProb() >= 0.15))
 			{
-				System.out.println("Decrementar probabilidad de mutación");
+				//The mutation probability never is less than 0.1
+				System.out.println("Decrease mutation probability -> " + (getMutationProb() - 0.05));
 				setMutationProb(getMutationProb() - 0.05);
 			}
 		}
@@ -166,7 +171,7 @@ public class EnsembleAlgorithmTable extends EnsembleAlgorithm {
 		{
 			byte[] genotype = ((BinArrayIndividual) bset.get(0)).getGenotype();
 
-			classifier = new EnsembleClassifierTable(getNumberLabelsClassifier(), getNumberClassifiers(), getPredictionThreshold(), getVariable(), new LabelPowerset(new J48()), genotype, tableClassifiers);
+			classifier = new EnsembleClassifierTable(getNumberLabelsClassifier(), getNumberClassifiers(), getPredictionThreshold(), getVariable(), new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 			
 			System.out.println("Final ensemble");
 			for(int i=0; i<getNumberClassifiers(); i++)

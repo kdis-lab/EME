@@ -1,8 +1,8 @@
 package net.sf.jclec.problem.classification.multilabel;
 
 import java.util.Hashtable;
-import java.util.Random;
 
+import net.sf.jclec.util.random.IRandGen;
 import weka.core.Instances;
 import weka.filters.unsupervised.attribute.Remove;
 import mulan.classifier.InvalidDataException;
@@ -33,6 +33,11 @@ public class EnsembleClassifierTable extends EnsembleClassifier {
 		this.tableClassifiers = tableClassifiers;
 	}	
 
+	public EnsembleClassifierTable(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
+	{
+		super(maxSubsetSize, numClassifiers, threshold, variable, baseLearner, genotype, randGen);
+		this.tableClassifiers = tableClassifiers;
+	}	
 	
 	/////////////////////////////////////////////////////////////////
 	// ----------------------------------------------- Protected methods
@@ -51,7 +56,6 @@ public class EnsembleClassifierTable extends EnsembleClassifier {
 	   
 	   Ensemble = new MultiLabelLearner[numClassifiers];		
 	   Filters = new Remove[numClassifiers];	
-	   rnd = new Random(System.currentTimeMillis());
 	   
 	   
 	   if(genotype==null)
