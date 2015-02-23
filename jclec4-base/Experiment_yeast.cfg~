@@ -1,5 +1,5 @@
 <experiment>
-	 <process algorithm-type="net.sf.jclec.problem.classification.multilabel.EnsembleAlgorithmTable">
+	 <process algorithm-type="net.sf.jclec.problem.classification.multilabel.EnsembleAlgorithm">
 		 <rand-gen-factory type="net.sf.jclec.util.random.RanecuFactory" seed="10"/>
 		 <population-size>20</population-size>
 		 <max-of-generations>10</max-of-generations>
@@ -9,13 +9,13 @@
 		 <parents-selector type="net.sf.jclec.selector.TournamentSelector">
 			 <tournament-size>2</tournament-size>
 		 </parents-selector>
-		 <recombinator type="net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover" rec-prob="0.8" />
+		 <recombinator type="net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover" rec-prob="0.8" />
 		 <mutator type="net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator" mut-prob="0.2" />
 		 <number-classifiers>28</number-classifiers>
 		 <number-labels-classifier>3</number-labels-classifier>
 		 <prediction-threshold>0.5</prediction-threshold>
 		 <variable>false</variable>
-		 <controlPopulationDiversity>false</controlPopulationDiversity>
+		 <controlPopulationDiversity>true</controlPopulationDiversity>
 		 <fitnessWithIndividualDiversity>false</fitnessWithIndividualDiversity>
 		 <validation-set>true</validation-set>
 		 <dataset>

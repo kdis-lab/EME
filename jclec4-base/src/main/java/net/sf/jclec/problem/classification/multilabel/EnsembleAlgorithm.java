@@ -1,14 +1,26 @@
 package net.sf.jclec.problem.classification.multilabel;
 
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+
 import mulan.data.IterativeStratification;
+import mulan.data.LabelPowersetStratification;
 import mulan.data.MultiLabelInstances;
+import mulan.data.Statistics;
+import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.transformation.LabelPowerset;
 import weka.classifiers.trees.J48;
+import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
+import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
+import net.sf.jclec.selector.BettersSelector;
+import net.sf.jclec.selector.WorsesSelector;
 
 import org.apache.commons.configuration.Configuration;
 
@@ -43,7 +55,15 @@ public class EnsembleAlgorithm extends SGE
 	
 	private boolean variable; //if true the individual will have [2..numberLabelsClassifier] 1s
 	
+	private Hashtable<String, MultiLabelLearner> tableClassifiers;
+	
+	private Hashtable<String, Double> tableFitness;
+	
 	private boolean isValidationSet;
+	
+	private boolean controlPopulationDiversity;
+	
+	private boolean fitnessWithIndividualDiversity;
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -56,16 +76,14 @@ public class EnsembleAlgorithm extends SGE
 	public EnsembleAlgorithm() 
 	{
 		super();
+		
+		tableClassifiers = new Hashtable<String, MultiLabelLearner> ();
+		tableFitness = new Hashtable<String, Double> ();
 	}
 	
 	/////////////////////////////////////////////////////////////////
 	// ----------------------------------------------- Public methods
 	/////////////////////////////////////////////////////////////////
-	
-	public EnsembleClassifier getClassifier()
-	{
-		return classifier;
-	}
 	
 	public MultiLabelInstances getDatasetTrain()
 	{
@@ -80,6 +98,11 @@ public class EnsembleAlgorithm extends SGE
 	public MultiLabelInstances getDatasetTest()
 	{
 		return datasetTest;
+	}
+	
+	public EnsembleClassifier getClassifier()
+	{
+		return classifier;
 	}
 		
 	public int getNumberClassifiers()
@@ -106,6 +129,16 @@ public class EnsembleAlgorithm extends SGE
 	{
 		return isValidationSet;
 	}
+	
+	public boolean getControlPopulationDiversity()
+	{
+		return controlPopulationDiversity;
+	}
+	
+	public boolean getFitnessWithIndividualDiversity()
+	{
+		return fitnessWithIndividualDiversity;
+	}
 
 	
 	/**
@@ -124,7 +157,7 @@ public class EnsembleAlgorithm extends SGE
 			String datasetXMLFileName = configuration.getString("dataset.xml");
 			
 			MultiLabelInstances fullDatasetTrain = new MultiLabelInstances(datasetTrainFileName, datasetXMLFileName);
-			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);
+			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);			
 			
 			//Use or not a validation set to evaluate individuals
 			isValidationSet = configuration.getBoolean("validation-set");
@@ -132,7 +165,7 @@ public class EnsembleAlgorithm extends SGE
 			{
 				System.out.println("Use a validation set to evaluate individuals");
 				IterativeStratification strat = new IterativeStratification();
-//				LabelPowersetStratification strat = new LabelPowersetStratification();
+				//LabelPowersetStratification strat = new LabelPowersetStratification();
 				// 75% for train ; 100% for validation
 				MultiLabelInstances [] m = strat.stratify(fullDatasetTrain, 4);
 				//Train set have 3 folds
@@ -153,13 +186,15 @@ public class EnsembleAlgorithm extends SGE
 				datasetValidation = datasetTrain;
 			}
 			
-			
 			// Obtain settings
 			int numberLabels = datasetTrain.getNumLabels();
 			numberLabelsClassifier = configuration.getInt("number-labels-classifier");
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
 			variable = configuration.getBoolean("variable");
+			
+			controlPopulationDiversity = configuration.getBoolean("controlPopulationDiversity");
+			fitnessWithIndividualDiversity = configuration.getBoolean("fitnessWithIndividualDiversity");
 			
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
@@ -174,10 +209,22 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setNumberLabelsClassifier(numberLabelsClassifier);
 			((EnsembleMLCEvaluator) evaluator).setPredictionThreshold(predictionThreshold);
 			((EnsembleMLCEvaluator) evaluator).setVariable(variable);
+			((EnsembleMLCEvaluator) evaluator).setTable(tableClassifiers);
+			((EnsembleMLCEvaluator) evaluator).setTableMeasures(tableFitness);
+			((EnsembleMLCEvaluator) evaluator).setFitnessWithIndividualDiversity(fitnessWithIndividualDiversity);
+			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
 			
 			// Set genetic operator settingsS
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);
 			((UniformModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
+			
+			// Send Phi matrix to the mutator if it needs it
+			if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
+			{
+				Statistics s = new Statistics();
+				double [][] phi = s.calculatePhi(getDatasetTrain());
+				((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -197,13 +244,91 @@ public class EnsembleAlgorithm extends SGE
 	{				
 		System.out.println("--- Generation " + generation + " ---");
 		System.out.println("----------------------");
+		
+		/* Control population diversity 
+		 * 
+		 * Try to maximize the percentage of distinct base classifiers in population from all possible
+		 * 		Possible base classifiers is min between all possible combinations and num of base classifiers in population
+		 * 
+		 * Big diversity -> less mutation
+		 * Little diversity -> more mutation
+		 * 
+		 * Other proposal:
+		 * 		Little diversity -> introduce random indiviudals
+		 */	
+		if(controlPopulationDiversity)
+		{
+			int maxCombinationsBaseClassifiers = 1;
+			
+			for(int i=0; i<getNumberLabelsClassifier(); i++)
+			{
+				maxCombinationsBaseClassifiers = maxCombinationsBaseClassifiers * (getDatasetTrain().getNumLabels() - i);
+			}
+			maxCombinationsBaseClassifiers = maxCombinationsBaseClassifiers / (factorial(getNumberLabelsClassifier()));
+			
+			int maxNumOfBaseClassifiers = getPopulationSize() * getNumberClassifiers();
+			
+			
+			int min = 0;
+			if(maxCombinationsBaseClassifiers < maxNumOfBaseClassifiers)
+				min = maxCombinationsBaseClassifiers;
+			else
+				min = maxNumOfBaseClassifiers;
+			
+			int numDistinctBaseClassifiers = getNumberOfDistinctBaseClassifiers(bset);
+			
+			double populationDiversity = (double)numDistinctBaseClassifiers / min;
+			
+			System.out.println("populationDiversity: " + populationDiversity);
+				
+//			if((populationDiversity < 0.5) && (getMutationProb() < 0.4))
+//			{
+//				//The mutation probability never is greater than 0.4
+//				System.out.println("Increase mutation probability -> " + (getMutationProb() + 0.05));
+//				setMutationProb(getMutationProb() + 0.05);
+//			}
+//			else if((populationDiversity > 0.85) && (getMutationProb() >= 0.15))
+//			{
+//				//The mutation probability never is less than 0.1
+//				System.out.println("Decrease mutation probability -> " + (getMutationProb() - 0.05));
+//				setMutationProb(getMutationProb() - 0.05);
+//			}
+			
+			if(populationDiversity < 0.5)
+			{
+				WorsesSelector wselector = new WorsesSelector(this);
+				//Remove 10% of worst individuals
+				List<IIndividual> wset = wselector.select(bset, (int)Math.round(bset.size()*0.1));
+				int wsize = wset.size();
+				System.out.println("remove " + wsize + " individuals");
+				bset.removeAll(wset);
+				
+				List<IIndividual> newset = provider.provide(wsize);
+				evaluator.evaluate(newset);
+				bset.addAll(newset);
+				
+			}
+			
+		}
+		
+		
 		// If maximum number of generations is exceeded, evolution is finished
 		if (generation >= maxOfGenerations)
 		{
 			
 			byte[] genotype = ((BinArrayIndividual) bset.get(0)).getGenotype();
 
-			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, randGenFactory.createRandGen());
+			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
+			
+			System.out.println("Final ensemble");
+			for(int i=0; i<getNumberClassifiers(); i++)
+			{
+				for(int j=0; j<getDatasetTrain().getNumLabels(); j++)
+				{
+					System.out.print(genotype[i*getDatasetTrain().getNumLabels()+j] + " ");
+				}
+				System.out.println();
+			}
 			
 			try {	
 				classifier.build(datasetTrain);
@@ -215,4 +340,52 @@ public class EnsembleAlgorithm extends SGE
 			state = FINISHED;
 		}
 	}
+	
+	public int getNumberOfDistinctBaseClassifiers(List<IIndividual> bset)
+	{
+		int n = 0;
+		
+		HashSet<String> set = new HashSet<String>();
+		
+		for(int p=0; p<bset.size(); p++)
+		{
+			String p1 = getGenotypeFromIIndividual(bset.get(p));
+			for(int i=0; i<p1.length()/getDatasetTrain().getNumLabels(); i++)
+			{
+				set.add(p1.substring(i*getDatasetTrain().getNumLabels(), i*getDatasetTrain().getNumLabels()+getDatasetTrain().getNumLabels()));
+			}
+			
+		}
+		
+		n = set.size();
+		
+		return n;
+	}
+	
+
+	public String getGenotypeFromIIndividual (IIndividual i)
+	{		
+		String s = i.toString();
+		
+		s = s.split("=")[1];
+		
+		s = s.split(",fitness")[0];
+		
+		s = s.replace("{","");
+		s = s.replace("}","");
+		
+		s = s.replace(",", "");
+		
+		return s;
+	}
+	
+	public int factorial (int n)
+	{
+		if(n == 1)
+			return 1;
+		else
+			return n*factorial(n-1);
+	}
+	
+	
 }

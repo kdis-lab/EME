@@ -1,30 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item value="289" key="DIALOG_WIDTH"/>
-		<item value="106" key="DIALOG_Y_ORIGIN"/>
-		<item value="943" key="DIALOG_X_ORIGIN"/>
-		<item value="460" key="DIALOG_HEIGHT"/>
+		<item value="309" key="DIALOG_WIDTH"/>
+		<item value="349" key="DIALOG_Y_ORIGIN"/>
+		<item value="480" key="DIALOG_HEIGHT"/>
+		<item value="670" key="DIALOG_X_ORIGIN"/>
 		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="casesensitive"/>
 		<item value="false" key="isRegEx"/>
+		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="rand" key="selection"/>
+		<item value="" key="selection"/>
 		<list key="findhistory">
+			<item value="EnsembleAlgorithmTableç"/>
+			<item value="EnsembleAlgorithmTable"/>
+			<item value="thmTable"/>
+			<item value="Table"/>
+			<item value="COPY"/>
+			<item value="table"/>
+			<item value="variable"/>
 			<item value="rand"/>
-			<item value="randge"/>
-			<item value="ramd"/>
-			<item value="valida"/>
-			<item value="train"/>
-			<item value="datasetTrain"/>
-			<item value="print"/>
-			<item value="calcula"/>
 		</list>
 		<list key="replacehistory">
+			<item value=""/>
 		</list>
 	</section>
 </section>

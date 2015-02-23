@@ -11,5 +11,11 @@
 <fullyQualifiedTypeName name="javax.naming.Context"/>
 <fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGenFactory"/>
 <fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGen"/>
+<fullyQualifiedTypeName name="mulan.data.Statistics"/>
+<fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator"/>
 <fullyQualifiedTypeName name="mulan.data.LabelPowersetStratification"/>
+<fullyQualifiedTypeName name="net.sf.jclec.selector.WorsesSelector"/>
+<fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
 </qualifiedTypeNameHistroy>
