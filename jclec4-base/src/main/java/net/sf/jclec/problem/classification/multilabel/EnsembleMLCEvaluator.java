@@ -68,32 +68,46 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	// --------------------------------------------------- Properties
 	/////////////////////////////////////////////////////////////////
 	
+	/* Dataset to build the ensemble */
 	protected MultiLabelInstances datasetTrain;
 	
+	/* Dataset to evaluate the individuals */
 	protected MultiLabelInstances datasetValidation;
 	
+	/* Number of active labels in each base classifier */
 	protected int numberLabelsClassifier;
 	
+	/* Number of base classifiers of the ensemble */
 	protected int numberClassifiers;
 	
+	/* Threshold for voting process prediction*/
 	protected double predictionThreshold;
 	
+	/* Indicates if the number of active labels is variable for each base classifier */
 	protected boolean variable;
 	
+	/* Indicates if the fitness is a value to maximize */
 	protected boolean maximize = true;
 	
+	/* Base learner for the classifiers of the ensemble */
 	public MultiLabelLearner baseLearner;
 	
+	/* Fitness values comparator */
 	protected Comparator<IFitness> COMPARATOR = new ValueFitnessComparator(!maximize);
 	
+	/* Table that stores all base classifiers built */
 	public Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
+	/* Table that stores the fitness of all evaluated individuals */
 	public Hashtable<String, Double> tableFitness;
 	
+	/* Matrix with phi correlations between labels */
 	double [][] phiMatrix;
 	
+	/* Indicates if the individual diversity is contemplated in fitness */
 	private boolean fitnessWithIndividualDiversity = false;
 	
+	/* Random numbers generator */
 	protected IRandGenFactory randGenFactory;
 	
 	/////////////////////////////////////////////////////////////////
@@ -207,14 +221,14 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
         	    // Build classifier using train data
         	    classifier.build(datasetTrain);
 
+        	    
         	    List<Measure> measures = new ArrayList<Measure>();  	       
-  	       	  	measures = prepareMeasures(classifier, datasetTrain);
+  	       	  	measures.add(new HammingLoss());
   	       	  	Evaluation results;
   	       	  	
-  	       	  	// Obtain ensembleMatrix  	       	  	
+  	       	  	// Obtain ensembleMatrix
   	       	  	byte [][] ensembleMatrix = classifier.getEnsembleMatrix();
-  	       	  	
-  	       	  	String s = getStringFromEnsembleMatrix(ensembleMatrix, classifier.getNumClassifiers(), classifier.getNumLabels());
+  	       	  	String s = classifier.getOrderedStringFromEnsembleMatrix();
   	       	  	
   	       	  	double fitness = -1;
   	       	  	//Try to get the individual fitness from the table
@@ -224,14 +238,19 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  	}
   	       	  	else
   	       	  	{
+  	       	  		//Evaluate the ensemble with the validation set
   	       	  		results = eval.evaluate(classifier, datasetValidation, measures);
-  	       	  		String mName = new String();
-  	       	  		mName = "Hamming Loss";
   	       	  		
   	       	  		if(fitnessWithIndividualDiversity)
   	       	  		{
   	       	  			int max = 0;
 	  				
+  	       	  			/*
+  	       	  			 * Calculate the individual diversity:
+  	       	  			 * 		- Calculate the maximum number of repetitions of a label
+  	       	  			 * 		- Divide max by possible number of appearances
+  	       	  			 * 		- The diversity is 1 -  (try to have a balanced appearance of labels)
+  	       	  			 */
 		  				for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
 		  				{
 		  					int sum = 0;
@@ -241,23 +260,29 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		  						sum = sum + genotype[i+j*getDatasetTrain().getNumLabels()];
 		  					}
 		  					
-		  					//System.out.println("sum: " + sum);
 		  					if (sum > max)
 		  						max = sum;
-		  				}
-		  				
+		  				}		  				
 		  				//The diversity is the opposite of the max number of label repeat
 		  				double div = 1 - (double)max/getNumberClassifiers();
 	  	       	  		
+		  				//maximize (1 - HLoss)
+		  				double measure = results.getMeasures().get(0).getValue(); //Only one metric is available
+		  				measure = 1 - measure;
+		  				
 		  				if(maximize)
-		  					fitness = getMeasureValue(mName, results)*0.6 + div*0.4;
+		  				{
+		  					fitness = results.getMeasures().get(0).getValue()*0.6 + div*0.4;
+		  				}
 		  				else
-		  					fitness = getMeasureValue(mName, results)*0.6 + (1-div)*0.4;
+		  				{
+		  					//The diversity is to maximize, so if fitness is to minimize, we have to minimize (1-diversity)
+		  					fitness = results.getMeasures().get(0).getValue()*0.6 + (1-div)*0.4;
+		  				}
   	       	  		}
   	       	  		else
   	       	  		{
-  	       	  			//Introduces phi correlation in fitness
-  	       	  			double measure = getMeasureValue(mName, results);
+  	       	  			double measure = results.getMeasures().get(0).getValue();
   	       	  			//measure is Hloss -> 1-Hloss is to maximize
   	       	  			measure = 1 - measure;
   	       	  			fitness = measure;	
@@ -272,9 +297,9 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  			{
   	       	  				double sumPhi = 0;
   	       	  				//calculate sum of phi label correlations for a base classifier
-  	       	  				for(int i=0; i<getDataset().getNumLabels()-1; i++)
+  	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
   	       	  				{
-  	       	  					for(int j=i+1; j<getDataset().getNumLabels(); j++)
+  	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
   	       	  					{
   	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
   	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
@@ -287,9 +312,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  			fitness = measure + phiTotal;
   	       	  			
   	       	  			*/
-  	       	  			
-  	       	  		}	  	       	  	
-
+  	       	  		}
 	  				
   	       	  		tableFitness.put(s, fitness);
   	       	  	}
@@ -302,124 +325,5 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 				e.printStackTrace();
 			}	
 	}
-	
-	protected List<Measure> prepareMeasures(MultiLabelLearner learner,
-            MultiLabelInstances mlTestData) {
-        List<Measure> measures = new ArrayList<Measure>();
-
-        MultiLabelOutput prediction;
-        try {
-            prediction = learner.makePrediction(mlTestData.getDataSet().instance(0));
-            int numOfLabels = mlTestData.getNumLabels();
-            
-            // add bipartition-based measures if applicable
-            if (prediction.hasBipartition()) {
-                // add example-based measures
-                measures.add(new HammingLoss());
-                measures.add(new SubsetAccuracy());
-                measures.add(new ExampleBasedPrecision());
-                measures.add(new ExampleBasedRecall());
-                measures.add(new ExampleBasedFMeasure());
-                measures.add(new ExampleBasedAccuracy());
-                measures.add(new ExampleBasedSpecificity());
-                // add label-based measures
-                measures.add(new MicroPrecision(numOfLabels));
-                measures.add(new MicroRecall(numOfLabels));
-                measures.add(new MicroFMeasure(numOfLabels));
-                measures.add(new MicroSpecificity(numOfLabels));
-                measures.add(new MacroPrecision(numOfLabels));
-                measures.add(new MacroRecall(numOfLabels));
-                measures.add(new MacroFMeasure(numOfLabels));
-                measures.add(new MacroSpecificity(numOfLabels));
-            }
-            // add ranking-based measures if applicable
-            if (prediction.hasRanking()) {
-                // add ranking based measures
-                measures.add(new AveragePrecision());
-                measures.add(new Coverage());
-                measures.add(new OneError());
-                measures.add(new IsError());
-                measures.add(new ErrorSetSize());
-                measures.add(new RankingLoss());
-            }
-            // add confidence measures if applicable
-            if (prediction.hasConfidences()) {
-                measures.add(new MeanAveragePrecision(numOfLabels));
-                measures.add(new GeometricMeanAveragePrecision(numOfLabels));
-                measures.add(new MeanAverageInterpolatedPrecision(numOfLabels, 10));
-                measures.add(new GeometricMeanAverageInterpolatedPrecision(numOfLabels, 10));
-                measures.add(new MicroAUC(numOfLabels));
-                measures.add(new MacroAUC(numOfLabels));
-                measures.add(new LogLoss());
-            }
-            // add hierarchical measures if applicable
-            if (mlTestData.getLabelsMetaData().isHierarchy()) {
-                measures.add(new HierarchicalLoss(mlTestData));
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(Evaluator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return measures;
-    }
-	
-	
-	protected double getMeasureValue (String measureName, Evaluation results)
-	{
-		double mvalue = -1;
-		
-		for(int i=0; i<results.getMeasures().size(); i++)
-		{
-			if(results.getMeasures().get(i).getName().equals(measureName))
-			{
-				mvalue = results.getMeasures().get(i).getValue();
-				break;
-			}
-		}
-		
-		if(mvalue == -1)
-		{
-			System.out.println("Incorrect name of the measure. Correct are: ");
-			for(int i=0; i<results.getMeasures().size(); i++)
-			{
-				System.out.println("   " + results.getMeasures().get(i).getName());
-			}
-			System.exit(-1);
-		}
-		
-		return mvalue;
-	}
-	
-	protected String getStringFromEnsembleMatrix(byte [][] ensembleMatrix, int numClassifiers, int numLabels)
-	{
-		
-		String [] matrix = new String[numClassifiers];
-     	  	
-		// EnsembleMatrix to Strings array
-     	for(int i=0; i<numClassifiers; i++)
-     	{
-     		String s = new String();
-     			
-     		for(int j=0; j<numLabels; j++)
-     		{
-     			s = s+ensembleMatrix[i][j];
-     		}
-     	 		
-     		matrix[i] = s;
-     	}
-
-     	// Ordered list of rows of the EnsembleMatrix
-     	Arrays.sort(matrix);
-     		
-     	String s2 = new String();
-     	 	
-	    for(int i=0; i<numClassifiers; i++)
-	    {
-	    	s2 = s2 + matrix[i];
-	    }
-		
-		return s2;
-	}
-
 
 }

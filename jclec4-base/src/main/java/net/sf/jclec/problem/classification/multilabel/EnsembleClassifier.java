@@ -3,6 +3,7 @@ package net.sf.jclec.problem.classification.multilabel;
 import mulan.data.InvalidDataFormatException;
 import mulan.data.MultiLabelInstances;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 
@@ -25,64 +26,46 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	// --------------------------------------------------- Properties
 	/////////////////////////////////////////////////////////////////
 	
+	/* Dataset to build the classifier */
 	protected MultiLabelInstances multilabelDatasetTrain;
 	
+	/* Max number of active labels in a base classifier */
 	protected int maxSubsetSize; 
 	
+	/* Number of base classifiers in the ensemble */
 	protected int numClassifiers;
 	
+	/* Threshold for voting process prediction */
 	protected double threshold;
-			
-	protected MultiLabelLearner[] Ensemble; // Array of classifiers
 	
-	protected int[] SizeSubsets; //size of the subsets of each classifier
+	/* Array of classifiers forming the ensemble */
+	protected MultiLabelLearner[] Ensemble;
 	
+	/* Size of the subset of labels of each base classifier */
+	protected int[] SizeSubsets;
+	
+	/* Filter to remove the non-active labels */
 	protected Remove[] Filters;
 	
+	/* Binary matrix that identifies the ensemble */
 	protected byte EnsembleMatrix[][]=null;
 	
-	protected boolean variable=false; //The subset size is variable for each classifier
+	/* Indicates if the number of active labels is variable for each base classifier */
+	protected boolean variable=false;
 	
+	/* Individual genotype that identifies the individual */
 	protected byte genotype[];
 	
+	/* Random numbers generator */
 	protected IRandGen randGen;
 	
+	/* Table that stores all base classifiers built */
 	private Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
 	/////////////////////////////////////////////////////////////////
-	
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = numClassifiers;
-		this.threshold = threshold;
-		this.variable = variable;
-	}	
-	
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = numClassifiers;
-		this.threshold = threshold;
-	    this.variable = variable;
-		this.genotype = genotype;
-	}
-	
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, IRandGen randGen)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = numClassifiers;
-		this.threshold = threshold;
-	    this.variable = variable;
-		this.genotype = genotype;
-		this.randGen = randGen;
-	}
 	
 	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
 	{
@@ -96,24 +79,56 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.randGen = randGen;
 	}
 	
-	public EnsembleClassifier(int maxSubsetSize, double threshold, boolean variable, MultiLabelLearner baseLearner)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers=-1;
-		this.threshold = threshold;
-		this.variable = variable;
-	}	
-	
-	public EnsembleClassifier(int maxSubsetSize, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype)
+	//Constructor without numClassifiers
+	public EnsembleClassifier(int maxSubsetSize, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
 	{
 		super(baseLearner);
 		this.maxSubsetSize = maxSubsetSize;
 		this.numClassifiers = -1;
 		this.threshold = threshold;
-		this.variable = variable;
+	    this.variable = variable;
 		this.genotype = genotype;
-	}	
+		this.tableClassifiers = tableClassifiers;
+		this.randGen = randGen;
+	}
+	
+	//Constructor without genotype
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
+	{
+		super(baseLearner);
+		this.maxSubsetSize = maxSubsetSize;
+		this.numClassifiers = numClassifiers;
+		this.threshold = threshold;
+	    this.variable = variable;
+		this.tableClassifiers = tableClassifiers;
+		this.randGen = randGen;
+	}
+	
+	//Constructor without tableClassifiers
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, IRandGen randGen)
+	{
+		super(baseLearner);
+		this.maxSubsetSize = maxSubsetSize;
+		this.numClassifiers = numClassifiers;
+		this.threshold = threshold;
+	    this.variable = variable;
+		this.genotype = genotype;
+		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
+		this.randGen = randGen;
+	}
+	
+	//Constructor without genotype and tableClassifiers
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, IRandGen randGen)
+	{
+		super(baseLearner);
+		this.maxSubsetSize = maxSubsetSize;
+		this.numClassifiers = numClassifiers;
+		this.threshold = threshold;
+	    this.variable = variable;
+		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
+		this.randGen = randGen;
+	}
+		
 	
 	
 	/////////////////////////////////////////////////////////////////
@@ -172,6 +187,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.multilabelDatasetTrain = multilabelDatasetTrain;
 	}
       
+	
 	@Override
 	public String toString()
 	{
@@ -194,12 +210,9 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return str;
 	}
 	
-	public String globalInfo() {
-		String str = "";
-		str+="Class implementing a generalized ML-ECOC ensemble algorithm";
-		return str;
-	}
-	
+	/*
+	 * Classify a set of instances
+	 */
 	public int[][] classify(MultiLabelInstances mlData)
 	{		
 		int[][] predictions = new int[mlData.getNumInstances()][numLabels];
@@ -234,8 +247,12 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return(predictions);		
 	}
 	
-	 @Override
-	 protected void buildInternal(MultiLabelInstances trainingData) throws Exception {
+	
+	/*
+	 * Build the ensemble
+	 */
+	@Override
+	protected void buildInternal(MultiLabelInstances trainingData) throws Exception {
 		 
 		   this.multilabelDatasetTrain = trainingData;		
 		   
@@ -261,7 +278,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 			   
 				// build a MultiLabelLearner for the selected label subset;
 				try {
-					
 					//Try to get a classifier from the tableClassifiers
 					String s = new String();
 					
@@ -282,8 +298,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 						//Get the classifier from the table
 						Ensemble[i] = tableClassifiers.get(s);
 					}					
-
-					
 				} catch (InvalidDataException e) {	
 					e.printStackTrace();
 				} catch (InvalidDataFormatException e){
@@ -296,7 +310,10 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   
 		}
 	 
-
+	
+	/*
+	 * Make prediction of the ensemble for a instance
+	 */
 	@Override
 	protected MultiLabelOutput makePredictionInternal(Instance instance) throws Exception
 	{		
@@ -387,6 +404,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
         return(trainSubset);		
 	}
 	
+	
 	protected void initEnsembleMatrix()
 	{
 		EnsembleMatrix = new byte[numClassifiers][numLabels];		
@@ -472,5 +490,40 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
     			this.SizeSubsets[model]=subsetSize;    			
     	}   	
     }
+    
+    
+    /*
+     * Get a String identifying the ensemble
+     * The base classifiers are ordered, in order to compare ensembles
+     */
+    protected String getOrderedStringFromEnsembleMatrix()
+	{		
+		String [] matrix = new String[numClassifiers];
+     	  	
+		// EnsembleMatrix to Strings array
+     	for(int i=0; i<numClassifiers; i++)
+     	{
+     		String s = new String();
+     			
+     		for(int j=0; j<numLabels; j++)
+     		{
+     			s = s+EnsembleMatrix[i][j];
+     		}
+     	 		
+     		matrix[i] = s;
+     	}
+
+     	// Ordered list of rows of the EnsembleMatrix
+     	Arrays.sort(matrix);
+     		
+     	String s2 = new String();
+     	 	
+	    for(int i=0; i<numClassifiers; i++)
+	    {
+	    	s2 = s2 + matrix[i];
+	    }
+		
+		return s2;
+	}
     
 }
