@@ -227,21 +227,27 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setFitnessWithIndividualDiversity(fitnessWithIndividualDiversity);
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
 			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
-			Statistics s = new Statistics();
-			double [][] phi = s.calculatePhi(getDatasetTrain());
-			((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
-			
+
 			// Set genetic operator settingsS
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);
 			((UniformModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
 			
-			// Send Phi matrix to the mutator if it needs it
-			if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
+			
+			//Calculate PhiMatrix only if its necessary
+			if((mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator")) || (phiInFitness))
 			{
-//				Statistics s = new Statistics();
-//				double [][] phi = s.calculatePhi(getDatasetTrain());
-				((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
+				Statistics s = new Statistics();
+				double [][] phi = s.calculatePhi(getDatasetTrain());
+				
+				// Send Phi matrix to the mutator if it needs it
+				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
+					((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
+				
+				//Send phi matrix to ealuator
+				if(phiInFitness)
+					((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
 			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();

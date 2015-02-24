@@ -213,9 +213,45 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  		fitness = tableFitness.get(s).doubleValue();
   	       	  	}
   	       	  	else
-  	       	  	{
-  	       	  		//Evaluate the ensemble with the validation set
+  	       	  	{     	  		
+  	       	  		//Calculate base fitness with validation set
   	       	  		results = eval.evaluate(classifier, datasetValidation, measures);
+  	       	  		fitness = 1 - results.getMeasures().get(0).getValue();
+  	       	  		
+//  	       	  	double measure = results.getMeasures().get(0).getValue();
+//     	  			//measure is Hloss -> 1-Hloss is to maximize
+//     	  			measure = 1 - measure;
+  	       	  		
+     	  			if(phiInFitness)
+     	  			{
+     	  				/*
+	       	  			 * Introduces Phi correlation in fitness
+	       	  			 * 	Maximize [(1-HLoss) + PhiSum]
+	       	  			 */
+	       	  			   	  	       	  			
+	       	  			double phiTotal = 0;
+	       	  			
+	       	  			//Calculate sumPhi for all base classifiers
+	       	  			for(int c=0; c<getNumberClassifiers(); c++)
+	       	  			{
+	       	  				double sumPhi = 0;
+	       	  				//calculate sum of phi label correlations for a base classifier
+	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
+	       	  				{
+	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
+	       	  					{
+	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
+	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
+	       	  					}
+	       	  				}
+	       	  				
+	       	  				phiTotal += (sumPhi/getDatasetTrain().getNumLabels());
+	       	  			}
+	       	  		
+	       	  			phiTotal = phiTotal/getNumberClassifiers();
+	       	  			//Maximize [(1-HLoss) + PhiSum]
+	       	  			fitness = fitness + phiTotal;
+     	  			}  	       	  		
   	       	  		
   	       	  		if(fitnessWithIndividualDiversity)
   	       	  		{
@@ -241,59 +277,16 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		  				}		  				
 		  				//The diversity is the opposite of the max number of label repeat
 		  				double div = 1 - (double)max/getNumberClassifiers();
-	  	       	  		
-		  				//maximize (1 - HLoss)
-		  				double measure = results.getMeasures().get(0).getValue(); //Only one metric is available
-		  				measure = 1 - measure;
 		  				
 		  				if(maximize)
 		  				{
-		  					fitness = results.getMeasures().get(0).getValue()*0.6 + div*0.4;
+		  					fitness = fitness*0.6 + div*0.4;
 		  				}
 		  				else
 		  				{
 		  					//The diversity is to maximize, so if fitness is to minimize, we have to minimize (1-diversity)
-		  					fitness = results.getMeasures().get(0).getValue()*0.6 + (1-div)*0.4;
+		  					fitness = fitness*0.6 + (1-div)*0.4;
 		  				}
-  	       	  		}
-  	       	  		else
-  	       	  		{
-  	       	  			double measure = results.getMeasures().get(0).getValue();
-  	       	  			//measure is Hloss -> 1-Hloss is to maximize
-  	       	  			measure = 1 - measure;
-  	       	  			
-  	       	  			if(!phiInFitness)
-  	       	  				fitness = measure;	
-  	       	  			else
-  	       	  			{
-  	       	  				/*
-  	  	       	  			 * Introduces Phi correlation in fitness
-  	  	       	  			 * 	Maximize [(1-HLoss) + PhiSum]
-  	  	       	  			 */
-  	  	       	  			   	  	       	  			
-  	  	       	  			double phiTotal = 0;
-  	  	       	  			
-  	  	       	  			//Calculate sumPhi for all base classifiers
-  	  	       	  			for(int c=0; c<getNumberClassifiers(); c++)
-  	  	       	  			{
-  	  	       	  				double sumPhi = 0;
-  	  	       	  				//calculate sum of phi label correlations for a base classifier
-  	  	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
-  	  	       	  				{
-  	  	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
-  	  	       	  					{
-  	  	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-  	  	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
-  	  	       	  					}
-  	  	       	  				}
-  	  	       	  				
-  	  	       	  				phiTotal += (sumPhi/getDatasetTrain().getNumLabels());
-  	  	       	  			}
-  	  	       	  		
-  	  	       	  			phiTotal = phiTotal/getNumberClassifiers();
-  	  	       	  			//Maximize [(1-HLoss) + PhiSum]
-  	  	       	  			fitness = measure + phiTotal;
-  	       	  			}
   	       	  		}
 	  				
   	       	  		tableFitness.put(s, fitness);
