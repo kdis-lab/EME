@@ -1,49 +1,17 @@
 package net.sf.jclec.problem.classification.multilabel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import mulan.data.MultiLabelInstances;
 import mulan.classifier.MultiLabelLearner;
-import mulan.classifier.MultiLabelOutput;
 import mulan.classifier.transformation.LabelPowerset;
 import mulan.evaluation.Evaluator;
 import mulan.evaluation.Evaluation;
-import mulan.evaluation.measure.AveragePrecision;
-import mulan.evaluation.measure.Coverage;
-import mulan.evaluation.measure.ErrorSetSize;
-import mulan.evaluation.measure.ExampleBasedAccuracy;
-import mulan.evaluation.measure.ExampleBasedFMeasure;
-import mulan.evaluation.measure.ExampleBasedPrecision;
-import mulan.evaluation.measure.ExampleBasedRecall;
-import mulan.evaluation.measure.ExampleBasedSpecificity;
-import mulan.evaluation.measure.GeometricMeanAverageInterpolatedPrecision;
-import mulan.evaluation.measure.GeometricMeanAveragePrecision;
 import mulan.evaluation.measure.HammingLoss;
-import mulan.evaluation.measure.HierarchicalLoss;
-import mulan.evaluation.measure.IsError;
-import mulan.evaluation.measure.LogLoss;
-import mulan.evaluation.measure.MacroAUC;
-import mulan.evaluation.measure.MacroPrecision;
-import mulan.evaluation.measure.MacroRecall;
-import mulan.evaluation.measure.MacroSpecificity;
-import mulan.evaluation.measure.MeanAverageInterpolatedPrecision;
-import mulan.evaluation.measure.MeanAveragePrecision;
 import mulan.evaluation.measure.Measure;
-import mulan.evaluation.measure.MacroFMeasure;
-import mulan.evaluation.measure.MicroAUC;
-import mulan.evaluation.measure.MicroFMeasure;
-import mulan.evaluation.measure.MicroPrecision;
-import mulan.evaluation.measure.MicroRecall;
-import mulan.evaluation.measure.MicroSpecificity;
-import mulan.evaluation.measure.OneError;
-import mulan.evaluation.measure.RankingLoss;
-import mulan.evaluation.measure.SubsetAccuracy;
 import weka.classifiers.trees.J48;
 import net.sf.jclec.IFitness;
 import net.sf.jclec.IIndividual;
@@ -109,6 +77,9 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	
 	/* Random numbers generator */
 	protected IRandGenFactory randGenFactory;
+	
+	/* Indicates if the individual fitness contemplates the phi correlation between labels */
+	private boolean phiInFitness;
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -201,6 +172,11 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	 {
 		 this.randGenFactory = randGenFactory;
 	 }
+	 
+	 public void setPhiInFitness(boolean phiInFitness)
+	 {
+		 this.phiInFitness = phiInFitness;
+	 }
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------ Overwriting AbstractEvaluator methods
@@ -285,33 +261,39 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  			double measure = results.getMeasures().get(0).getValue();
   	       	  			//measure is Hloss -> 1-Hloss is to maximize
   	       	  			measure = 1 - measure;
-  	       	  			fitness = measure;	
   	       	  			
-  	       	  			/*
-  	       	  			 * Introduces Phi correlation in fitness
-  	       	  			
-  	       	  			double phiTotal = 0;
-  	       	  			
-  	       	  			//Calculate sumPhi for all base classifiers
-  	       	  			for(int c=0; c<getNumberClassifiers(); c++)
+  	       	  			if(!phiInFitness)
+  	       	  				fitness = measure;	
+  	       	  			else
   	       	  			{
-  	       	  				double sumPhi = 0;
-  	       	  				//calculate sum of phi label correlations for a base classifier
-  	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
-  	       	  				{
-  	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
-  	       	  					{
-  	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-  	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
-  	       	  					}
-  	       	  				}
-  	       	  				
-  	       	  				phiTotal += sumPhi;
+  	       	  				/*
+  	  	       	  			 * Introduces Phi correlation in fitness
+  	  	       	  			 * 	Maximize [(1-HLoss) + PhiSum]
+  	  	       	  			 */
+  	  	       	  			   	  	       	  			
+  	  	       	  			double phiTotal = 0;
+  	  	       	  			
+  	  	       	  			//Calculate sumPhi for all base classifiers
+  	  	       	  			for(int c=0; c<getNumberClassifiers(); c++)
+  	  	       	  			{
+  	  	       	  				double sumPhi = 0;
+  	  	       	  				//calculate sum of phi label correlations for a base classifier
+  	  	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
+  	  	       	  				{
+  	  	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
+  	  	       	  					{
+  	  	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
+  	  	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
+  	  	       	  					}
+  	  	       	  				}
+  	  	       	  				
+  	  	       	  				phiTotal += (sumPhi/getDatasetTrain().getNumLabels());
+  	  	       	  			}
+  	  	       	  		
+  	  	       	  			phiTotal = phiTotal/getNumberClassifiers();
+  	  	       	  			//Maximize [(1-HLoss) + PhiSum]
+  	  	       	  			fitness = measure + phiTotal;
   	       	  			}
-  	       	  			
-  	       	  			fitness = measure + phiTotal;
-  	       	  			
-  	       	  			*/
   	       	  		}
 	  				
   	       	  		tableFitness.put(s, fitness);

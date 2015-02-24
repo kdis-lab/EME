@@ -9,7 +9,6 @@
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover"/>
 <fullyQualifiedTypeName name="javax.naming.Context"/>
-<fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGen"/>
 <fullyQualifiedTypeName name="mulan.data.Statistics"/>
 <fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator"/>
@@ -18,4 +17,10 @@
 <fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGenFactory"/>
+<fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayRecombinator"/>
+<fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGen"/>
+<fullyQualifiedTypeName name="java.util.Hashtable"/>
+<fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
+<fullyQualifiedTypeName name="weka.classifiers.trees.J48"/>
+<fullyQualifiedTypeName name="mulan.evaluation.measure.HammingLoss"/>
 </qualifiedTypeNameHistroy>

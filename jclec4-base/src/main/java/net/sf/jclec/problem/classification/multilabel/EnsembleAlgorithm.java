@@ -75,6 +75,9 @@ public class EnsembleAlgorithm extends SGE
 	
 	/* Indicates if the individual fitness contemplates the individual diversity */
 	private boolean fitnessWithIndividualDiversity;
+	
+	/* Indicates if the individual fitness contemplates the phi correlation between labels */
+	private boolean phiInFitness;
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -204,6 +207,7 @@ public class EnsembleAlgorithm extends SGE
 			
 			controlPopulationDiversity = configuration.getBoolean("controlPopulationDiversity");
 			fitnessWithIndividualDiversity = configuration.getBoolean("fitnessWithIndividualDiversity");
+			phiInFitness = configuration.getBoolean("phi-in-fitness");
 			
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
@@ -222,6 +226,7 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setTableMeasures(tableFitness);
 			((EnsembleMLCEvaluator) evaluator).setFitnessWithIndividualDiversity(fitnessWithIndividualDiversity);
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
+			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
 			Statistics s = new Statistics();
 			double [][] phi = s.calculatePhi(getDatasetTrain());
 			((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
