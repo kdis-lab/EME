@@ -323,10 +323,10 @@ public class EnsembleAlgorithm extends SGE
 			if(populationDiversity < 0.5)
 			{
 				WorsesSelector wselector = new WorsesSelector(this);
-				//Remove 60% of worst individuals
-				List<IIndividual> wset = wselector.select(bset, (int)Math.round(bset.size()*0.6));
+				//Remove 30% of worst individuals
+				List<IIndividual> wset = wselector.select(bset, (int)Math.round(bset.size()*0.3));
 				int wsize = wset.size();
-				System.out.println("Remove " + wsize + " individuals (60%)");
+				System.out.println("Remove " + wsize + " individuals (30%)");
 				bset.removeAll(wset);
 				
 				//Create new random individuals

@@ -196,9 +196,9 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
         try {
         	    // Build classifier using train data
         	    classifier.build(datasetTrain);
-
         	    
-        	    List<Measure> measures = new ArrayList<Measure>();  	       
+        	    List<Measure> measures = new ArrayList<Measure>();  
+        	    //Add only the measure to use
   	       	  	measures.add(new HammingLoss());
   	       	  	Evaluation results;
   	       	  	
@@ -213,14 +213,10 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  		fitness = tableFitness.get(s).doubleValue();
   	       	  	}
   	       	  	else
-  	       	  	{     	  		
-  	       	  		//Calculate base fitness with validation set
+  	       	  	{
+  	       	  		//Calculate base fitness (1-HLoss) with validation set
   	       	  		results = eval.evaluate(classifier, datasetValidation, measures);
   	       	  		fitness = 1 - results.getMeasures().get(0).getValue();
-  	       	  		
-//  	       	  	double measure = results.getMeasures().get(0).getValue();
-//     	  			//measure is Hloss -> 1-Hloss is to maximize
-//     	  			measure = 1 - measure;
   	       	  		
      	  			if(phiInFitness)
      	  			{
@@ -251,7 +247,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	       	  			phiTotal = phiTotal/getNumberClassifiers();
 	       	  			//Maximize [(1-HLoss) + PhiSum]
 	       	  			fitness = fitness + phiTotal;
-     	  			}  	       	  		
+     	  			}
   	       	  		
   	       	  		if(fitnessWithIndividualDiversity)
   	       	  		{
