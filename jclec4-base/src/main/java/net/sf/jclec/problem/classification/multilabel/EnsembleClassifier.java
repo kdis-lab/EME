@@ -18,10 +18,16 @@ import mulan.classifier.MultiLabelOutput;
 import mulan.classifier.meta.MultiLabelMetaLearner;
 import net.sf.jclec.util.random.IRandGen;
 
-@SuppressWarnings("serial")
 
 public class EnsembleClassifier extends MultiLabelMetaLearner
-{
+{	
+	/////////////////////////////////////////////////////////////////
+	// --------------------------------------- Serialization constant
+	/////////////////////////////////////////////////////////////////
+	
+	private static final long serialVersionUID = 1402348312634173068L;
+
+	
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------------------- Properties
 	/////////////////////////////////////////////////////////////////
@@ -62,6 +68,14 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	/* Table that stores all base classifiers built */
 	private Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
+	/* Diversity measure entropy E */
+	private double entropy;
+	
+	private double[] entropyPerLabel;
+	
+	private int [] votesPerLabel;
+	
+	
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -76,7 +90,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    this.variable = variable;
 		this.genotype = genotype;
 		this.tableClassifiers = tableClassifiers;
-		this.randGen = randGen;
+		this.randGen = randGen;		
 	}
 	
 	//Constructor without numClassifiers
@@ -187,6 +201,30 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.multilabelDatasetTrain = multilabelDatasetTrain;
 	}
       
+	public int[] getVotesPerLabel() {
+		return votesPerLabel;
+	}
+	
+	public void resetEntropy()
+	{
+		entropy = 0;
+		for(int i=0; i<numLabels; i++)
+			entropyPerLabel[i] = 0;
+	}
+	
+	public double[] getEntropyPerLabel() {
+		return entropyPerLabel;
+	}
+	
+	public void setEntropy(double entropy) {
+		this.entropy = entropy;
+	}
+	
+	public double getEntropy() {
+		return entropy;
+	}
+	
+	
 	
 	@Override
 	public String toString()
@@ -212,6 +250,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	
 	/*
 	 * Classify a set of instances
+	 * 
+	 * Calculate entropy
 	 */
 	public int[][] classify(MultiLabelInstances mlData)
 	{		
@@ -265,6 +305,15 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   Ensemble = new MultiLabelLearner[numClassifiers];		
 		   Filters = new Remove[numClassifiers];	
 		   
+		   votesPerLabel = new int[numLabels];
+			for(int i=0; i<genotype.length; i++)
+			{
+				votesPerLabel[i%numLabels] += genotype[i];
+			}
+			entropyPerLabel = new double[numLabels];
+			for(int i=0; i<numLabels; i++)
+				entropyPerLabel[i] = 0;
+		   
 		   
 		   if(genotype==null)
 			  initEnsembleMatrix(); 
@@ -316,11 +365,11 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	 */
 	@Override
 	protected MultiLabelOutput makePredictionInternal(Instance instance) throws Exception
-	{		
+	{
 	    double[] sumConf = new double[numLabels];
 	    double[] sumVotes = new double[numLabels];
 	    double[] lengthVotes = new double[numLabels];
-
+	    
 	    // gather votes
 	    for (int model = 0; model < numClassifiers; model++) 
 	    {
@@ -341,6 +390,17 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	              }	             
 	           }	       
 	     }
+	    
+	    for(int label=0; label<numLabels; label++)
+	    {
+	    	//If there are 1 or 0 votes for a label, the entropy is 0 -> floor(0) == floor(0.5) == 0 -> Zero division
+	    	if(sumVotes[label] <= 1)
+	    		entropyPerLabel[label] += 0;
+	    	else if(sumVotes[label] < (votesPerLabel[label] - sumVotes[label]))
+	    		entropyPerLabel[label] += (sumVotes[label]) / (Math.floor((double)votesPerLabel[label] / 2));
+	    	else
+	    		entropyPerLabel[label] += (votesPerLabel[label] - sumVotes[label]) / (Math.floor((double)votesPerLabel[label] / 2));
+	    }
 	      
 	    
 	     double[] confidence1 = new double[numLabels];
@@ -368,7 +428,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 
 	     MultiLabelOutput mlo = new MultiLabelOutput(bipartition, confidence1);
 	     return mlo;
-	}	 
+	}	
 
 
 

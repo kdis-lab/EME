@@ -4,7 +4,7 @@
 		 <population-size>20</population-size>
 		 <max-of-generations>10</max-of-generations>
 		 <species type="net.sf.jclec.binarray.BinArrayIndividualSpecies" genotype-length="1"/>
-		 <evaluator type="net.sf.jclec.problem.classification.multilabel.EnsembleMLCEvaluator" phiValue="true"/>
+		 <evaluator type="net.sf.jclec.problem.classification.multilabel.EnsembleMLCEvaluator"/>
 		 <provider type="net.sf.jclec.problem.classification.multilabel.EnsembleMLCCreator"/>
 		 <parents-selector type="net.sf.jclec.selector.TournamentSelector">
 			 <tournament-size>2</tournament-size>
@@ -18,6 +18,7 @@
 		 <controlPopulationDiversity>false</controlPopulationDiversity>
 		 <fitnessWithIndividualDiversity>false</fitnessWithIndividualDiversity>
 		 <validation-set>true</validation-set>
+		 <phi-in-fitness>true</phi-in-fitness>
 		 <dataset>
 			<train-dataset>data/emotions/emotions_train_1.arff</train-dataset>
 			<test-dataset>data/emotions/emotions_test_1.arff</test-dataset>
