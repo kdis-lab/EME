@@ -75,6 +75,10 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	
 	private int [] votesPerLabel;
 	
+	private double measureOfDifficulty;
+	
+	private int[][] difficultyMatrix;
+	
 	
 
 	/////////////////////////////////////////////////////////////////
@@ -224,6 +228,28 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return entropy;
 	}
 	
+	public double getMeasureOfDifficulty() {
+		return measureOfDifficulty;
+	}
+	
+	public void setMeasureOfDifficulty(double measureOfDifficulty) {
+		this.measureOfDifficulty = measureOfDifficulty;
+	}
+	
+	public void resetMeasureOfDifficulty()
+	{
+		measureOfDifficulty = 0;
+		
+		difficultyMatrix = new int [numLabels][];
+		for(int i=0; i<numLabels; i++)
+			difficultyMatrix[i] = new int[votesPerLabel[i]+1];
+	}
+	
+	public int[][] getDifficultyMatrix() {
+		return difficultyMatrix;
+	}
+	
+	
 	
 	
 	@Override
@@ -314,6 +340,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 			for(int i=0; i<numLabels; i++)
 				entropyPerLabel[i] = 0;
 		   
+			resetMeasureOfDifficulty();
 		   
 		   if(genotype==null)
 			  initEnsembleMatrix(); 
@@ -370,10 +397,14 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    double[] sumVotes = new double[numLabels];
 	    double[] lengthVotes = new double[numLabels];
 	    
+	    int[] numCorrectPredictions = new int[numLabels];
+	    
 	    // gather votes
 	    for (int model = 0; model < numClassifiers; model++) 
 	    {
-	        Filters[model].input(instance);
+	    	boolean [] trueLabels = getTrueLabels(instance, numLabels, multilabelDatasetTrain.getLabelIndices());
+	        
+	    	Filters[model].input(instance);
 	        Filters[model].batchFinished();
 	        Instance newInstance = Filters[model].output();
 	        MultiLabelOutput subsetMLO = Ensemble[model].makePrediction(newInstance);
@@ -386,11 +417,27 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	        	     sumConf[label] += subsetMLO.getConfidences()[k];
 	                 sumVotes[label] += subsetMLO.getBipartition()[k] ? 1 : 0;
 	                 lengthVotes[label]++;
+	                 
+	                 //For measureOfDifficulty
+	                 if(subsetMLO.getBipartition()[k] == trueLabels[label]) //correct prediction
+	                	 numCorrectPredictions[label]++;
+	                 
 	                 k++;
-	              }	             
+	              }
 	           }	       
 	     }
 	    
+	    //For measureOfDifficulty
+	    for(int label=0; label<numLabels; label++)
+	    {
+	    	difficultyMatrix[label][numCorrectPredictions[label]]++;
+	    }
+	    
+	    //For entropy
+	   /*
+	    * The min between {numOfCorrectVotes, votes - numOfCorrectVotes} == {nupOfPositiveVotes, votes - numOfPositiveVotes}
+	    * 																		   without knowing the real output
+	    */
 	    for(int label=0; label<numLabels; label++)
 	    {
 	    	//If there are 1 or 0 votes for a label, the entropy is 0 -> floor(0) == floor(0.5) == 0 -> Zero division
@@ -585,5 +632,18 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		
 		return s2;
 	}
+    
+    
+    private boolean[] getTrueLabels(Instance instance, int numLabels, int[] labelIndices) {
+
+        boolean[] trueLabels = new boolean[numLabels];
+        for (int counter = 0; counter < numLabels; counter++) {
+            int classIdx = labelIndices[counter];
+            String classValue = instance.attribute(classIdx).value((int) instance.value(classIdx));
+            trueLabels[counter] = classValue.equals("1");
+        }
+
+        return trueLabels;
+    }
     
 }

@@ -13,16 +13,16 @@
 		<item value="false" key="isRegEx"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="maximi" key="selection"/>
+		<item value="rand" key="selection"/>
 		<list key="findhistory">
+			<item value="rand"/>
+			<item value="ç"/>
+			<item value="votes"/>
+			<item value="entropyP"/>
+			<item value="rese"/>
+			<item value="getTr"/>
 			<item value="maximi"/>
 			<item value="confi"/>
-			<item value="valida"/>
-			<item value="Table"/>
-			<item value="EnsembleAlgorithmTableç"/>
-			<item value="EnsembleAlgorithmTable"/>
-			<item value="thmTable"/>
-			<item value="COPY"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>

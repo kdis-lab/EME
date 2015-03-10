@@ -20,7 +20,11 @@
 <fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayRecombinator"/>
 <fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGen"/>
 <fullyQualifiedTypeName name="java.util.Hashtable"/>
-<fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
 <fullyQualifiedTypeName name="weka.classifiers.trees.J48"/>
 <fullyQualifiedTypeName name="mulan.evaluation.measure.HammingLoss"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.MeasureOfDifficultyEvaluator"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover"/>
+<fullyQualifiedTypeName name="weka.classifiers.trees.DecisionStump"/>
+<fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
+<fullyQualifiedTypeName name="java.lang.System"/>
 </qualifiedTypeNameHistroy>

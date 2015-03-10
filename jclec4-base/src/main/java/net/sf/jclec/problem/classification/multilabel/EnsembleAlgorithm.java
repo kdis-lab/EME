@@ -16,6 +16,7 @@ import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
+import net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover;
 import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
 import net.sf.jclec.selector.WorsesSelector;
 
@@ -78,7 +79,13 @@ public class EnsembleAlgorithm extends SGE
 	
 	/* Indicates if the entropy is used in fitness */
 	private boolean useEntropy;
+	
+	/* Indicates if the measure of difficulty is used in fitness */
+	private boolean useMeasureOfDifficulty;
 
+	/* Indicates if the coverage is used in fitness */
+	private boolean useCoverage;
+	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
 	/////////////////////////////////////////////////////////////////
@@ -209,6 +216,8 @@ public class EnsembleAlgorithm extends SGE
 			fitnessWithIndividualDiversity = configuration.getBoolean("fitnessWithIndividualDiversity");
 			phiInFitness = configuration.getBoolean("phi-in-fitness");
 			useEntropy = configuration.getBoolean("use-entropy");
+			useMeasureOfDifficulty = configuration.getBoolean("use-measure-of-difficulty");
+			useCoverage = configuration.getBoolean("use-coverage");
 			
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
@@ -229,6 +238,8 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
 			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
 			((EnsembleMLCEvaluator) evaluator).setUseEntropy(useEntropy);
+			((EnsembleMLCEvaluator) evaluator).setUseMeasureOfDifficulty(useMeasureOfDifficulty);
+			((EnsembleMLCEvaluator) evaluator).setUseCoverage(useCoverage);
 
 			// Set genetic operator settingsS
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);

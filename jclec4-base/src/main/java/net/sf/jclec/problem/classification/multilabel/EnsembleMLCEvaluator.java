@@ -81,6 +81,12 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	/* Indicates if the entropy is used in fitness */
 	private boolean useEntropy;
 	
+	/* Indicates if the measure of difficulty is used in fitness */
+	private boolean useMeasureOfDifficulty;
+	
+	/* Indicates if the coverage is used in fitness */
+	private boolean useCoverage;
+	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
 	/////////////////////////////////////////////////////////////////
@@ -182,6 +188,14 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	 {
 		 this.useEntropy = useEntropy;
 	 }
+	 
+	 public void setUseMeasureOfDifficulty(boolean useMeasureOfDifficulty) {
+		this.useMeasureOfDifficulty = useMeasureOfDifficulty;
+	}
+	 
+	 public void setUseCoverage(boolean useCoverage) {
+		this.useCoverage = useCoverage;
+	}
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------ Overwriting AbstractEvaluator methods
@@ -196,7 +210,8 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		// Create classifier
 		EnsembleClassifier classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 		
-		EntropyEvaluator eval = new EntropyEvaluator();          
+//		EntropyEvaluator eval = new EntropyEvaluator();          
+		MeasureOfDifficultyEvaluator eval = new MeasureOfDifficultyEvaluator();
 
         try {
         	    // Build classifier using train data
@@ -246,20 +261,43 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	       	  					}
 	       	  				}
 	       	  				
-	       	  				phiTotal += (sumPhi/getDatasetTrain().getNumLabels());
+	       	  				phiTotal += sumPhi/numberLabelsClassifier;
 	       	  			}
 	       	  		
 	       	  			phiTotal = phiTotal/getNumberClassifiers();
+	       	  			//System.out.println("phiTotal: " + phiTotal);
 	       	  			//Maximize [(1-HLoss) + PhiSum]
 	       	  			fitness = fitness + phiTotal;
      	  			}
      	  			
      	  			if(useEntropy)
      	  			{
-     	  				//System.out.println("classifier entropy: " + classifier.getEntropy());
+//     	  				System.out.println("classifier entropy: " + classifier.getEntropy());
      	  				fitness = fitness + classifier.getEntropy();
      	  			}
-  	       	  		
+     	  			
+     	  			if(useMeasureOfDifficulty)
+     	  			{
+//     	  				System.out.println("classifier measure of difficulty: " + classifier.getMeasureOfDifficulty());
+     	  				fitness = fitness - classifier.getMeasureOfDifficulty();
+     	  			}
+     	  			
+     	  			if(useCoverage)
+     	  			{
+     	  				int [] v = classifier.getVotesPerLabel();
+     	  				int expectedVotes = (numberClassifiers*numberLabelsClassifier)/classifier.getNumLabels();
+     	  				//System.out.println("expectedVotes: " + expectedVotes);
+     	  				double distance = 0;
+     					for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
+     					{
+     						distance += (double)Math.pow(expectedVotes - v[i], 2);
+     					}
+     					
+     					distance = Math.sqrt(distance) / datasetTrain.getNumLabels();
+     					fitness = fitness - distance;
+     					//System.out.println("distance: " + distance + " -> fitness: " + fitness);
+     	  			}
+//  	       	  		
   	       	  		if(fitnessWithIndividualDiversity)
   	       	  		{
   	       	  			int max = 0;
@@ -299,6 +337,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  		tableFitness.put(s, fitness);
   	       	  	}
   	       	  	
+//  	       	  	System.out.println("Fitness: " + fitness);
   	       	  	ind.setFitness(new SimpleValueFitness(fitness));
 
 			} catch (IllegalArgumentException e) {
