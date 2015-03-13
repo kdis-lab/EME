@@ -25,17 +25,17 @@
 		<item value="600" key="width"/>
 	</section>
 	<section name="FatJarPackageWizard">
-		<item value="/home/jose/EvolutivoEnsembleMLC_EntropyEvaluator.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
+		<item value="/home/jose/EvolutivoEnsembleMLC_v3.jar" key="FatJarPackageWizardPage.DESTINATION_PATH_SELECTION"/>
 		<item value="New_configuration (1) - jclec4-base" key="FatJarPackageWizardPage.LAUNCH_CONFIGURATION_SELECTION_NAME"/>
 		<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace" key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION"/>
 		<item value="false" key="FatJarPackageWizardPage.ANTSCRIPT_SAVE"/>
 		<item value="2" key="FatJarPackageWizardPage.LIBRARY_HANDLING"/>
 		<list key="FatJarPackageWizardPage.DESTINATION_NAMES_ID">
+			<item value="/home/jose/EvolutivoEnsembleMLC_v3.jar"/>
+			<item value="/home/jose/EvolutivoEnsembleMLC_HLoss.jar"/>
+			<item value="/home/jose/EvolutivoEnsembleMLC_DiversityEvaluator.jar"/>
 			<item value="/home/jose/EvolutivoEnsembleMLC_EntropyEvaluator.jar"/>
 			<item value="/home/jose/EvolutivoEnsembleMLCv2_newPhi_LPStrat1-4.jar"/>
-			<item value="/home/jose/EvolutivoEnsembleMLCv2_Validation_1-4_LPStrat.jar"/>
-			<item value="/home/jose/EvolutivoEnsembleMLCv2_Validation_1-3_IterativeStrat.jar"/>
-			<item value="/home/jose/EvolutivoEnsembleMLCv2_Validation_v2.jar"/>
 		</list>
 		<list key="FatJarPackageWizardPage.ANTSCRIPT_LOCATION_HISTORY">
 			<item value="/media/jose/80BC03FCBC03EC0A/INVESTIGACION/EvolutivoEnsembleWorkspace.xml"/>

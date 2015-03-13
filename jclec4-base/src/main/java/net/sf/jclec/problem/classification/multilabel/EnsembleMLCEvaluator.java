@@ -230,6 +230,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  	//Try to get the individual fitness from the table
   	       	  	if(tableFitness.containsKey(s))
   	       	  	{
+  	       	  		System.out.println("Get " + s);
   	       	  		fitness = tableFitness.get(s).doubleValue();
   	       	  	}
   	       	  	else
@@ -284,6 +285,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
      	  			
      	  			if(useCoverage)
      	  			{
+     	  				System.out.println("coverage");
      	  				int [] v = classifier.getVotesPerLabel();
      	  				int expectedVotes = (numberClassifiers*numberLabelsClassifier)/classifier.getNumLabels();
      	  				//System.out.println("expectedVotes: " + expectedVotes);

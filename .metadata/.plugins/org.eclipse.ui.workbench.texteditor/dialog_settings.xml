@@ -2,27 +2,27 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="309" key="DIALOG_WIDTH"/>
-		<item value="349" key="DIALOG_Y_ORIGIN"/>
-		<item value="670" key="DIALOG_X_ORIGIN"/>
-		<item value="480" key="DIALOG_HEIGHT"/>
+		<item value="266" key="DIALOG_Y_ORIGIN"/>
+		<item value="508" key="DIALOG_HEIGHT"/>
+		<item value="868" key="DIALOG_X_ORIGIN"/>
 		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="casesensitive"/>
 		<item value="false" key="isRegEx"/>
+		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="rand" key="selection"/>
+		<item value="011001010011100011100011001101001101111000001011110010001110101001110100" key="selection"/>
 		<list key="findhistory">
+			<item value="011001010011100011100011001101001101111000001011110010001110101001110100"/>
+			<item value="doUp"/>
+			<item value="doU"/>
+			<item value="doC"/>
+			<item value="do"/>
+			<item value="selector"/>
 			<item value="rand"/>
 			<item value="ç"/>
-			<item value="votes"/>
-			<item value="entropyP"/>
-			<item value="rese"/>
-			<item value="getTr"/>
-			<item value="maximi"/>
-			<item value="confi"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>

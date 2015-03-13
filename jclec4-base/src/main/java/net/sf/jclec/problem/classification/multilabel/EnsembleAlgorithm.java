@@ -1,6 +1,5 @@
 package net.sf.jclec.problem.classification.multilabel;
 
-
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,10 +13,11 @@ import weka.classifiers.trees.J48;
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
+import net.sf.jclec.fitness.SimpleValueFitness;
 import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
-import net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover;
 import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
+import net.sf.jclec.selector.BettersSelector;
 import net.sf.jclec.selector.WorsesSelector;
 
 import org.apache.commons.configuration.Configuration;
@@ -282,6 +282,10 @@ public class EnsembleAlgorithm extends SGE
 		System.out.println("--- Generation " + generation + " ---");
 		System.out.println("----------------------");
 		
+		//Order the individual by fitness
+		BettersSelector bselector = new BettersSelector(this);
+		bset = bselector.select(bset);
+		
 		/* Control population diversity 
 		 * 
 		 * Try to maximize the percentage of distinct base classifiers in population from all possible
@@ -354,8 +358,11 @@ public class EnsembleAlgorithm extends SGE
 		// If maximum number of generations is exceeded, evolution is finished
 		if (generation >= maxOfGenerations)
 		{
+			for(IIndividual ind : bset)
+				System.out.println(((SimpleValueFitness)ind.getFitness()).getValue() + " --> " + getGenotypeFromIIndividual(ind));
 			/* Build the best individual */
-			byte[] genotype = ((BinArrayIndividual) bset.get(0)).getGenotype();
+			IIndividual bestInd = bselector.select(bset, 1).get(0);
+			byte[] genotype = ((BinArrayIndividual) bestInd).getGenotype();
 
 			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 			
@@ -438,6 +445,5 @@ public class EnsembleAlgorithm extends SGE
 		else
 			return n*factorial(n-1);
 	}
-	
-	
+
 }

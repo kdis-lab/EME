@@ -3,18 +3,15 @@
 <fullyQualifiedTypeName name="mulan.data.MultiLabelInstances"/>
 <fullyQualifiedTypeName name="mulan.data.IterativeStratification"/>
 <fullyQualifiedTypeName name="java.util.Vector"/>
-<fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayIndividual"/>
 <fullyQualifiedTypeName name="java.util.HashSet"/>
 <fullyQualifiedTypeName name="mulan.classifier.MultiLabelLearner"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.DatasetTransformation"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover"/>
 <fullyQualifiedTypeName name="javax.naming.Context"/>
 <fullyQualifiedTypeName name="mulan.data.Statistics"/>
-<fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator"/>
 <fullyQualifiedTypeName name="mulan.data.LabelPowersetStratification"/>
 <fullyQualifiedTypeName name="net.sf.jclec.selector.WorsesSelector"/>
-<fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="net.sf.jclec.util.random.IRandGenFactory"/>
 <fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayRecombinator"/>
@@ -27,4 +24,9 @@
 <fullyQualifiedTypeName name="weka.classifiers.trees.DecisionStump"/>
 <fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
 <fullyQualifiedTypeName name="java.lang.System"/>
+<fullyQualifiedTypeName name="mulan.evaluation.Evaluator"/>
+<fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayIndividual"/>
+<fullyQualifiedTypeName name="net.sf.jclec.fitness.SimpleValueFitness"/>
+<fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
+<fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
 </qualifiedTypeNameHistroy>
