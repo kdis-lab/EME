@@ -39,8 +39,8 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	/* Dataset to evaluate the individuals */
 	protected MultiLabelInstances datasetValidation;
 	
-	/* Number of active labels in each base classifier */
-	protected int numberLabelsClassifier;
+	/* Max number of active labels in each base classifier */
+	protected int maxNumberLabelsClassifier;
 	
 	/* Number of base classifiers of the ensemble */
 	protected int numberClassifiers;
@@ -130,8 +130,8 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		this.numberClassifiers = numberClassifiers;
 	}
 
-	public void setNumberLabelsClassifier(int numberLabelsClassifier) {
-		this.numberLabelsClassifier = numberLabelsClassifier;
+	public void setMaxNumberLabelsClassifier(int maxNumberLabelsClassifier) {
+		this.maxNumberLabelsClassifier = maxNumberLabelsClassifier;
 	}
 	
 	public void setPredictionThreshold(double predictionThreshold) {
@@ -208,7 +208,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		byte[] genotype = ((BinArrayIndividual) ind).getGenotype();
 		
 		// Create classifier
-		EnsembleClassifier classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
+		EnsembleClassifier classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 		
 //		EntropyEvaluator eval = new EntropyEvaluator();          
 		MeasureOfDifficultyEvaluator eval = new MeasureOfDifficultyEvaluator();
@@ -230,14 +230,15 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  	//Try to get the individual fitness from the table
   	       	  	if(tableFitness.containsKey(s))
   	       	  	{
-  	       	  		System.out.println("Get " + s);
   	       	  		fitness = tableFitness.get(s).doubleValue();
+  	       	  		System.out.println("Get");
   	       	  	}
   	       	  	else
   	       	  	{
   	       	  		//Calculate base fitness (1-HLoss) with validation set
   	       	  		results = eval.evaluate(classifier, datasetValidation, measures);
   	       	  		fitness = 1 - results.getMeasures().get(0).getValue();
+//  	       	  		System.out.println("HLoss: " + fitness);
   	       	  		
      	  			if(phiInFitness)
      	  			{
@@ -252,21 +253,27 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	       	  			for(int c=0; c<getNumberClassifiers(); c++)
 	       	  			{
 	       	  				double sumPhi = 0;
+	       	  				int active = 0;
 	       	  				//calculate sum of phi label correlations for a base classifier
 	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
 	       	  				{
+	       	  					if(ensembleMatrix[c][i] == 1)
+	       	  						active ++;
+	       	  					
 	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
 	       	  					{
 	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
+	       	  						{
+	       	  							if(!Double.isNaN(phiMatrix[i][j]))
+	       	  								sumPhi += Math.abs(phiMatrix[i][j]);
+	       	  						}
 	       	  					}
 	       	  				}
 	       	  				
-	       	  				phiTotal += sumPhi/numberLabelsClassifier;
+	       	  				phiTotal += sumPhi/active;
 	       	  			}
 	       	  		
 	       	  			phiTotal = phiTotal/getNumberClassifiers();
-	       	  			//System.out.println("phiTotal: " + phiTotal);
 	       	  			//Maximize [(1-HLoss) + PhiSum]
 	       	  			fitness = fitness + phiTotal;
      	  			}
@@ -274,20 +281,24 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
      	  			if(useEntropy)
      	  			{
 //     	  				System.out.println("classifier entropy: " + classifier.getEntropy());
-     	  				fitness = fitness + classifier.getEntropy();
+     	  				System.out.println("Entropy: " + classifier.getEntropy());
+//     	  				fitness = fitness + classifier.getEntropy();
      	  			}
      	  			
      	  			if(useMeasureOfDifficulty)
      	  			{
 //     	  				System.out.println("classifier measure of difficulty: " + classifier.getMeasureOfDifficulty());
      	  				fitness = fitness - classifier.getMeasureOfDifficulty();
+//     	  				System.out.println("MoD: " + classifier.getMeasureOfDifficulty());
      	  			}
      	  			
      	  			if(useCoverage)
      	  			{
-     	  				System.out.println("coverage");
      	  				int [] v = classifier.getVotesPerLabel();
-     	  				int expectedVotes = (numberClassifiers*numberLabelsClassifier)/classifier.getNumLabels();
+     	  				double expectedVotes = 0;
+     	  				for(int i=0; i<v.length; i++)
+     	  					expectedVotes += v[i];
+     	  				expectedVotes = expectedVotes/v.length;
      	  				//System.out.println("expectedVotes: " + expectedVotes);
      	  				double distance = 0;
      					for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
@@ -300,41 +311,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
      					//System.out.println("distance: " + distance + " -> fitness: " + fitness);
      	  			}
 //  	       	  		
-  	       	  		if(fitnessWithIndividualDiversity)
-  	       	  		{
-  	       	  			int max = 0;
-	  				
-  	       	  			/*
-  	       	  			 * Calculate the individual diversity:
-  	       	  			 * 		- Calculate the maximum number of repetitions of a label
-  	       	  			 * 		- Divide max by possible number of appearances
-  	       	  			 * 		- The diversity is 1 -  (try to have a balanced appearance of labels)
-  	       	  			 */
-		  				for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
-		  				{
-		  					int sum = 0;
-		  					
-		  					for(int j=0; j<getNumberClassifiers(); j++)
-		  					{
-		  						sum = sum + genotype[i+j*getDatasetTrain().getNumLabels()];
-		  					}
-		  					
-		  					if (sum > max)
-		  						max = sum;
-		  				}		  				
-		  				//The diversity is the opposite of the max number of label repeat
-		  				double div = 1 - (double)max/getNumberClassifiers();
-		  				
-		  				if(maximize)
-		  				{
-		  					fitness = fitness*0.6 + div*0.4;
-		  				}
-		  				else
-		  				{
-		  					//The diversity is to maximize, so if fitness is to minimize, we have to minimize (1-diversity)
-		  					fitness = fitness*0.6 + (1-div)*0.4;
-		  				}
-  	       	  		}
 	  				
   	       	  		tableFitness.put(s, fitness);
   	       	  	}
@@ -348,5 +324,5 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 				e.printStackTrace();
 			}	
 	}
-	
+
 }

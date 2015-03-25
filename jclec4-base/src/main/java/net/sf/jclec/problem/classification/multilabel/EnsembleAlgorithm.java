@@ -51,7 +51,7 @@ public class EnsembleAlgorithm extends SGE
 	private int numberClassifiers;
 	
 	/* Number of active labels in each base classifier */
-	private int numberLabelsClassifier;
+	private int maxNumberLabelsClassifier;
 
 	/* Threshold for voting process prediction*/
 	private double predictionThreshold;
@@ -131,9 +131,9 @@ public class EnsembleAlgorithm extends SGE
 		return numberClassifiers;
 	}
 	
-	public int getNumberLabelsClassifier()
+	public int getMaxNumberLabelsClassifier()
 	{
-		return numberLabelsClassifier;
+		return maxNumberLabelsClassifier;
 	}
 	
 	public double getPredictionThreshold()
@@ -207,10 +207,14 @@ public class EnsembleAlgorithm extends SGE
 			
 			// Obtain settings
 			int numberLabels = datasetTrain.getNumLabels();
-			numberLabelsClassifier = configuration.getInt("number-labels-classifier");
+			variable = configuration.getBoolean("variable");
+			if(variable)
+				maxNumberLabelsClassifier = (int) Math.ceil(Math.sqrt(numberLabels));
+			else
+				maxNumberLabelsClassifier = configuration.getInt("number-labels-classifier");
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
-			variable = configuration.getBoolean("variable");
+			
 			
 			controlPopulationDiversity = configuration.getBoolean("controlPopulationDiversity");
 			fitnessWithIndividualDiversity = configuration.getBoolean("fitnessWithIndividualDiversity");
@@ -221,7 +225,7 @@ public class EnsembleAlgorithm extends SGE
 			
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
-			((EnsembleMLCCreator) provider).setNumberLabelsClassifier(numberLabelsClassifier);
+			((EnsembleMLCCreator) provider).setMaxNumberLabelsClassifier(maxNumberLabelsClassifier);
 			((EnsembleMLCCreator) provider).setNumberLabels(numberLabels);
 			((EnsembleMLCCreator) provider).setVariable(variable); 
 			
@@ -229,7 +233,7 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setDatasetTrain(datasetTrain);
 			((EnsembleMLCEvaluator) evaluator).setDatasetValidation(datasetValidation);
 			((EnsembleMLCEvaluator) evaluator).setNumberClassifiers(numberClassifiers);
-			((EnsembleMLCEvaluator) evaluator).setNumberLabelsClassifier(numberLabelsClassifier);
+			((EnsembleMLCEvaluator) evaluator).setMaxNumberLabelsClassifier(maxNumberLabelsClassifier);
 			((EnsembleMLCEvaluator) evaluator).setPredictionThreshold(predictionThreshold);
 			((EnsembleMLCEvaluator) evaluator).setVariable(variable);
 			((EnsembleMLCEvaluator) evaluator).setTable(tableClassifiers);
@@ -252,11 +256,13 @@ public class EnsembleAlgorithm extends SGE
 				Statistics s = new Statistics();
 				double [][] phi = s.calculatePhi(getDatasetTrain());
 				
+//				s.printPhiCorrelations();
+				
 				// Send Phi matrix to the mutator if it needs it
 				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
 					((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
 				
-				//Send phi matrix to ealuator
+				//Send phi matrix to evaluator
 				if(phiInFitness)
 					((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
 			}
@@ -284,87 +290,16 @@ public class EnsembleAlgorithm extends SGE
 		
 		//Order the individual by fitness
 		BettersSelector bselector = new BettersSelector(this);
-		bset = bselector.select(bset);
-		
-		/* Control population diversity 
-		 * 
-		 * Try to maximize the percentage of distinct base classifiers in population from all possible
-		 * 		Possible base classifiers is min between all possible combinations and num of base classifiers in population
-		 * 
-		 * Big diversity -> less mutation
-		 * Little diversity -> more mutation
-		 * 
-		 * Other proposal (actual):
-		 * 		Little diversity -> introduce random indiviudals
-		 */	
-		if(controlPopulationDiversity)
-		{
-			/* Calculate population diversity */
-			int maxCombinationsBaseClassifiers = 1;
-			
-			for(int i=0; i<getNumberLabelsClassifier(); i++)
-			{
-				maxCombinationsBaseClassifiers = maxCombinationsBaseClassifiers * (getDatasetTrain().getNumLabels() - i);
-			}
-			maxCombinationsBaseClassifiers = maxCombinationsBaseClassifiers / (factorial(getNumberLabelsClassifier()));
-			
-			int maxNumOfBaseClassifiers = getPopulationSize() * getNumberClassifiers();
-			
-			
-			int min = 0;
-			if(maxCombinationsBaseClassifiers < maxNumOfBaseClassifiers)
-				min = maxCombinationsBaseClassifiers;
-			else
-				min = maxNumOfBaseClassifiers;
-			
-			int numDistinctBaseClassifiers = getNumberOfDistinctBaseClassifiers(bset);
-			
-			double populationDiversity = (double)numDistinctBaseClassifiers / min;
-			
-			System.out.println("populationDiversity: " + populationDiversity);
-				
-//			if((populationDiversity < 0.5) && (getMutationProb() < 0.4))
-//			{
-//				//The mutation probability never is greater than 0.4
-//				System.out.println("Increase mutation probability -> " + (getMutationProb() + 0.05));
-//				setMutationProb(getMutationProb() + 0.05);
-//			}
-//			else if((populationDiversity > 0.85) && (getMutationProb() >= 0.15))
-//			{
-//				//The mutation probability never is less than 0.1
-//				System.out.println("Decrease mutation probability -> " + (getMutationProb() - 0.05));
-//				setMutationProb(getMutationProb() - 0.05);
-//			}
-			
-			/* Control population diversity */
-			if(populationDiversity < 0.5)
-			{
-				WorsesSelector wselector = new WorsesSelector(this);
-				//Remove 30% of worst individuals
-				List<IIndividual> wset = wselector.select(bset, (int)Math.round(bset.size()*0.3));
-				int wsize = wset.size();
-				System.out.println("Remove " + wsize + " individuals (30%)");
-				bset.removeAll(wset);
-				
-				//Create new random individuals
-				List<IIndividual> newset = provider.provide(wsize);
-				evaluator.evaluate(newset);
-				bset.addAll(newset);
-			}
-			
-		}
-		
+		bset = bselector.select(bset);		
 		
 		// If maximum number of generations is exceeded, evolution is finished
 		if (generation >= maxOfGenerations)
 		{
-			for(IIndividual ind : bset)
-				System.out.println(((SimpleValueFitness)ind.getFitness()).getValue() + " --> " + getGenotypeFromIIndividual(ind));
 			/* Build the best individual */
 			IIndividual bestInd = bselector.select(bset, 1).get(0);
 			byte[] genotype = ((BinArrayIndividual) bestInd).getGenotype();
 
-			classifier = new EnsembleClassifier(numberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
+			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 			
 			System.out.println("Final ensemble");
 			for(int i=0; i<getNumberClassifiers(); i++)

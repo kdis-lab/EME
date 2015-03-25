@@ -355,6 +355,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 				// build a MultiLabelLearner for the selected label subset;
 				try {
 					//Try to get a classifier from the tableClassifiers
+					
 					String s = new String();
 					
 					for(int j=0; j<numLabels; j++)
@@ -362,6 +363,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 						s = s+EnsembleMatrix[i][j];
 					}
 
+					
 					if(tableClassifiers.get(s) == null)
 					{
 						//Build the classifier and put in the table
@@ -522,12 +524,12 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		//For each classifier in the ensemble
 		for(int model=0; model<numClassifiers;)
 		{  			
-		   if (variable == true)
+		   if (variable == false)
 		   {SizeSubsets[model]=maxSubsetSize;}
 		   else
 		   {
-//			   SizeSubsets[model]= 2 + rand.nextInt(maxSubsetSize-2+1);
-			   SizeSubsets[model]= 2 + randGen.choose(maxSubsetSize-2+1);
+//			   SizeSubsets[model]= 2 + randGen.choose(maxSubsetSize-2+1);
+			   SizeSubsets[model] = randGen.choose(2, maxSubsetSize + 1);
 		   }
 		   
 		   //Inicializations

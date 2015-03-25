@@ -21,7 +21,7 @@ public class EnsembleMLCCreator extends BinArrayCreator
 	
 	private int numberClassifiers;
 	
-	private int numberLabelsClassifier;
+	private int maxNumberLabelsClassifier;
 	
 	private boolean variable;
 
@@ -60,8 +60,8 @@ public class EnsembleMLCCreator extends BinArrayCreator
 		this.numberClassifiers = numberClassifiers;
 	}
 
-	public void setNumberLabelsClassifier(int numberLabelsClassifier) {
-		this.numberLabelsClassifier = numberLabelsClassifier;
+	public void setMaxNumberLabelsClassifier(int maxNumberLabelsClassifier) {
+		this.maxNumberLabelsClassifier = maxNumberLabelsClassifier;
 	}
 
 	public void setVariable(boolean variable)
@@ -85,11 +85,11 @@ public class EnsembleMLCCreator extends BinArrayCreator
 		//For each classifier in the ensemble		
 		for (int model=0; model<numberClassifiers; )
 		{			
-			int maxLabels;
-			if (variable==false)
-			   maxLabels = numberLabelsClassifier;	
+			int numLabelsClassifer;
+			if (variable)
+				numLabelsClassifer = randgen.choose(2, maxNumberLabelsClassifier+1); //At least 2 labels
 			else
-			   maxLabels = (byte) randgen.choose(2,numberLabelsClassifier+1); //At least 2 labels
+				numLabelsClassifer = maxNumberLabelsClassifier;	
 			
 			//Inicializations
 			StringBuffer comb2 = new StringBuffer("");			
@@ -102,7 +102,7 @@ public class EnsembleMLCCreator extends BinArrayCreator
 			   comb2.append('0');
 			}
 			   
-			for(int label=0; label<maxLabels; ) 
+			for(int label=0; label<numLabelsClassifer; ) 
 			{
 	           //Random selection of one label		
 	           int randomLabel= (int) randgen.choose(0, numberLabels);

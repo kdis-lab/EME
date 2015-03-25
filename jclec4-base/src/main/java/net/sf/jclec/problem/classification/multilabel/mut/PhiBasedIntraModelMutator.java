@@ -85,7 +85,8 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 						//Obtain Phi value for this '0' bit with the other '1' bits
 						if((mgenome[k] == 1) && (k!=mp1))
 						{
-							mut[j] = mut[j] + Math.abs(phiMatrix[j-i*numberLabels][k-i*numberLabels]);
+							if(!Double.isNaN(phiMatrix[j-i*numberLabels][k-i*numberLabels]))
+									mut[j] = mut[j] + Math.abs(phiMatrix[j-i*numberLabels][k-i*numberLabels]);
 						}
 					}
 				}
