@@ -29,4 +29,5 @@
 <fullyQualifiedTypeName name="net.sf.jclec.fitness.SimpleValueFitness"/>
 <fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
 <fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
+<fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator"/>
 </qualifiedTypeNameHistroy>

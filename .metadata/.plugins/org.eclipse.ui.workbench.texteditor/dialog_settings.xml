@@ -2,29 +2,31 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="309" key="DIALOG_WIDTH"/>
-		<item value="266" key="DIALOG_Y_ORIGIN"/>
-		<item value="868" key="DIALOG_X_ORIGIN"/>
-		<item value="508" key="DIALOG_HEIGHT"/>
+		<item value="109" key="DIALOG_Y_ORIGIN"/>
+		<item value="536" key="DIALOG_HEIGHT"/>
+		<item value="1149" key="DIALOG_X_ORIGIN"/>
 		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="casesensitive"/>
 		<item value="false" key="isRegEx"/>
+		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="sumPhi" key="selection"/>
+		<item value="maxSubsetSize" key="selection"/>
 		<list key="findhistory">
+			<item value="maxSubsetSize"/>
+			<item value="MaxSubsetSize"/>
+			<item value="maxLabels"/>
+			<item value="numberLabelsClassifier"/>
 			<item value="sumPhi"/>
 			<item value="011001010011100011100011001101001101111000001011110010001110101001110100"/>
 			<item value="doUp"/>
 			<item value="doU"/>
-			<item value="doC"/>
-			<item value="do"/>
-			<item value="selector"/>
-			<item value="rand"/>
 		</list>
 		<list key="replacehistory">
+			<item value="nmaxmberLabelsClassifier"/>
+			<item value="maxNumberLabelsClassifier"/>
 			<item value=""/>
 		</list>
 	</section>

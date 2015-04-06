@@ -231,7 +231,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	  	if(tableFitness.containsKey(s))
   	       	  	{
   	       	  		fitness = tableFitness.get(s).doubleValue();
-  	       	  		System.out.println("Get");
   	       	  	}
   	       	  	else
   	       	  	{
