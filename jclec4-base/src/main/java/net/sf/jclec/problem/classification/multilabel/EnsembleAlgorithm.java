@@ -1,8 +1,6 @@
 package net.sf.jclec.problem.classification.multilabel;
 
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 
 import mulan.data.LabelPowersetStratification;
 import mulan.data.MultiLabelInstances;
@@ -13,12 +11,10 @@ import weka.classifiers.trees.J48;
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
-import net.sf.jclec.fitness.SimpleValueFitness;
 import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
 import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
 import net.sf.jclec.selector.BettersSelector;
-import net.sf.jclec.selector.WorsesSelector;
 
 import org.apache.commons.configuration.Configuration;
 
@@ -66,22 +62,10 @@ public class EnsembleAlgorithm extends SGE
 	private Hashtable<String, Double> tableFitness;
 	
 	/* Indicates if a validation set is used to evaluate the individuals */
-	private boolean isValidationSet;
-	
-	/* Indicates if the diversity of the population is controlled */
-	private boolean controlPopulationDiversity;
-	
-	/* Indicates if the individual fitness contemplates the individual diversity */
-	private boolean fitnessWithIndividualDiversity;
+	private boolean useValidationSet;
 	
 	/* Indicates if the individual fitness contemplates the phi correlation between labels */
 	private boolean phiInFitness;
-	
-	/* Indicates if the entropy is used in fitness */
-	private boolean useEntropy;
-	
-	/* Indicates if the measure of difficulty is used in fitness */
-	private boolean useMeasureOfDifficulty;
 
 	/* Indicates if the coverage is used in fitness */
 	private boolean useCoverage;
@@ -146,19 +130,9 @@ public class EnsembleAlgorithm extends SGE
 		return variable;
 	}
 	
-	public boolean getIsValidationSet()
+	public boolean getUseValidationSet()
 	{
-		return isValidationSet;
-	}
-	
-	public boolean getControlPopulationDiversity()
-	{
-		return controlPopulationDiversity;
-	}
-	
-	public boolean getFitnessWithIndividualDiversity()
-	{
-		return fitnessWithIndividualDiversity;
+		return useValidationSet;
 	}
 
 	
@@ -181,8 +155,8 @@ public class EnsembleAlgorithm extends SGE
 			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);			
 			
 			//Use or not a validation set to evaluate individuals
-			isValidationSet = configuration.getBoolean("validation-set");
-			if(isValidationSet)
+			useValidationSet = configuration.getBoolean("validation-set");
+			if(useValidationSet)
 			{
 //				IterativeStratification strat = new IterativeStratification();
 				LabelPowersetStratification strat = new LabelPowersetStratification();
@@ -215,12 +189,7 @@ public class EnsembleAlgorithm extends SGE
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
 			
-			
-			controlPopulationDiversity = configuration.getBoolean("controlPopulationDiversity");
-			fitnessWithIndividualDiversity = configuration.getBoolean("fitnessWithIndividualDiversity");
 			phiInFitness = configuration.getBoolean("phi-in-fitness");
-			useEntropy = configuration.getBoolean("use-entropy");
-			useMeasureOfDifficulty = configuration.getBoolean("use-measure-of-difficulty");
 			useCoverage = configuration.getBoolean("use-coverage");
 			
 			// Set provider settings
@@ -238,11 +207,8 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setVariable(variable);
 			((EnsembleMLCEvaluator) evaluator).setTable(tableClassifiers);
 			((EnsembleMLCEvaluator) evaluator).setTableMeasures(tableFitness);
-			((EnsembleMLCEvaluator) evaluator).setFitnessWithIndividualDiversity(fitnessWithIndividualDiversity);
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
 			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
-			((EnsembleMLCEvaluator) evaluator).setUseEntropy(useEntropy);
-			((EnsembleMLCEvaluator) evaluator).setUseMeasureOfDifficulty(useMeasureOfDifficulty);
 			((EnsembleMLCEvaluator) evaluator).setUseCoverage(useCoverage);
 
 			// Set genetic operator settingsS
@@ -256,7 +222,7 @@ public class EnsembleAlgorithm extends SGE
 				Statistics s = new Statistics();
 				double [][] phi = s.calculatePhi(getDatasetTrain());
 				
-//				s.printPhiCorrelations();
+				s.printPhiCorrelations();
 				
 				// Send Phi matrix to the mutator if it needs it
 				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
@@ -299,21 +265,21 @@ public class EnsembleAlgorithm extends SGE
 			IIndividual bestInd = bselector.select(bset, 1).get(0);
 			byte[] genotype = ((BinArrayIndividual) bestInd).getGenotype();
 
-			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
-			
-			System.out.println("Final ensemble");
-			for(int i=0; i<getNumberClassifiers(); i++)
-			{
-				for(int j=0; j<getDatasetTrain().getNumLabels(); j++)
-				{
-					System.out.print(genotype[i*getDatasetTrain().getNumLabels()+j] + " ");
-				}
-				System.out.println();
-			}
-			
+			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());			
 			
 			try {	
 				classifier.build(datasetTrain);
+				
+				/* Print the final ensemble */
+				System.out.println("Final ensemble");
+				for(int i=0; i<getNumberClassifiers(); i++)
+				{
+					for(int j=0; j<getDatasetTrain().getNumLabels(); j++)
+					{
+						System.out.print(genotype[i*getDatasetTrain().getNumLabels()+j] + " ");
+					}
+					System.out.println();
+				}
 				
 				int [] v = classifier.getVotesPerLabel();
 				System.out.println("numVotes");
@@ -327,58 +293,6 @@ public class EnsembleAlgorithm extends SGE
 			
 			state = FINISHED;
 		}
-	}
-	
-	
-	/* 
-	 * Obtain the number of distinct base classifiers in the population 
-	 */
-	public int getNumberOfDistinctBaseClassifiers(List<IIndividual> bset)
-	{
-		int n = 0;
-		
-		HashSet<String> set = new HashSet<String>();
-		
-		for(int p=0; p<bset.size(); p++)
-		{
-			String p1 = getGenotypeFromIIndividual(bset.get(p));
-			for(int i=0; i<p1.length()/getDatasetTrain().getNumLabels(); i++)
-			{
-				//Add all base classifiers to the set
-				set.add(p1.substring(i*getDatasetTrain().getNumLabels(), i*getDatasetTrain().getNumLabels()+getDatasetTrain().getNumLabels()));
-			}
-		}
-		
-		//The number of distinct base classifiers is the size of the set
-			//because repeated individuals are overwritten
-		n = set.size();
-		
-		return n;
-	}
-	
-
-	public String getGenotypeFromIIndividual (IIndividual i)
-	{		
-		String s = i.toString();
-		
-		s = s.split("=")[1];
-		
-		s = s.split(",fitness")[0];
-		
-		s = s.replace("{","");
-		s = s.replace("}","");
-		
-		s = s.replace(",", "");
-		
-		return s;
-	}
-	
-	public int factorial (int n)
-	{
-		if(n == 1)
-			return 1;
-		else
-			return n*factorial(n-1);
 	}
 
 }

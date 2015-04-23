@@ -82,18 +82,20 @@ public class EnsembleMLCCreator extends BinArrayCreator
 		byte [] result = new byte[numberClassifiers * numberLabels];
 		HashSet<String> Combinations = new HashSet<String>();
 		
+		int numLabelsClassifier;
+		boolean [] visited;
+		
 		//For each classifier in the ensemble		
 		for (int model=0; model<numberClassifiers; )
-		{			
-			int numLabelsClassifer;
+		{
 			if (variable)
-				numLabelsClassifer = randgen.choose(2, maxNumberLabelsClassifier+1); //At least 2 labels
+				numLabelsClassifier = randgen.choose(2, maxNumberLabelsClassifier+1); //At least 2 labels
 			else
-				numLabelsClassifer = maxNumberLabelsClassifier;	
+				numLabelsClassifier = maxNumberLabelsClassifier;	
 			
 			//Inicializations
 			StringBuffer comb2 = new StringBuffer("");			
-			boolean visited[] = new boolean[numberLabels];	
+			visited = new boolean[numberLabels];	
 			
 			for(int label=0; label<numberLabels; label++)
 			{	   
@@ -102,7 +104,7 @@ public class EnsembleMLCCreator extends BinArrayCreator
 			   comb2.append('0');
 			}
 			   
-			for(int label=0; label<numLabelsClassifer; ) 
+			for(int label=0; label<numLabelsClassifier; ) 
 			{
 	           //Random selection of one label		
 	           int randomLabel= (int) randgen.choose(0, numberLabels);

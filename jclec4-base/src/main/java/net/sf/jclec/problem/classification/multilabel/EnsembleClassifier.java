@@ -68,17 +68,9 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	/* Table that stores all base classifiers built */
 	private Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
-	/* Diversity measure entropy E */
-	private double entropy;
-	
-	private double[] entropyPerLabel;
-	
+	/* Array with number of votes of the ensemble for each label */
 	private int [] votesPerLabel;
-	
-	private double measureOfDifficulty;
-	
-	private int[][] difficultyMatrix;
-	
+
 	
 
 	/////////////////////////////////////////////////////////////////
@@ -209,47 +201,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return votesPerLabel;
 	}
 	
-	public void resetEntropy()
-	{
-		entropy = 0;
-		for(int i=0; i<numLabels; i++)
-			entropyPerLabel[i] = 0;
-	}
-	
-	public double[] getEntropyPerLabel() {
-		return entropyPerLabel;
-	}
-	
-	public void setEntropy(double entropy) {
-		this.entropy = entropy;
-	}
-	
-	public double getEntropy() {
-		return entropy;
-	}
-	
-	public double getMeasureOfDifficulty() {
-		return measureOfDifficulty;
-	}
-	
-	public void setMeasureOfDifficulty(double measureOfDifficulty) {
-		this.measureOfDifficulty = measureOfDifficulty;
-	}
-	
-	public void resetMeasureOfDifficulty()
-	{
-		measureOfDifficulty = 0;
-		
-		difficultyMatrix = new int [numLabels][];
-		for(int i=0; i<numLabels; i++)
-			difficultyMatrix[i] = new int[votesPerLabel[i]+1];
-	}
-	
-	public int[][] getDifficultyMatrix() {
-		return difficultyMatrix;
-	}
-	
-	
 	
 	
 	@Override
@@ -285,20 +236,22 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 
 		Instances data = mlData.getDataSet();
 		
+		MultiLabelOutput mlo = null;
+		
 		for (int i=0; i<mlData.getNumInstances(); i++)
 		{ 	
 		    try {
-				MultiLabelOutput mlo = this.makePrediction(data.get(i));
+				mlo = this.makePrediction(data.get(i));
 				for(int j=0; j<this.numLabels; j++)
 				{	
-				  if(mlo.getBipartition()[j])
-				  {
-					  predictions[i][j]=1;
-				  }	
-				  else
-				  {
-					  predictions[i][j]=0;
-				  }	  
+					if(mlo.getBipartition()[j])
+					{
+						predictions[i][j]=1;
+					}	
+					else
+					{
+						predictions[i][j]=0;
+					}	  
 				}
 				
 			} catch (InvalidDataException e) {
@@ -332,37 +285,31 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   Filters = new Remove[numClassifiers];	
 		   
 		   votesPerLabel = new int[numLabels];
-			for(int i=0; i<genotype.length; i++)
-			{
-				votesPerLabel[i%numLabels] += genotype[i];
-			}
-			entropyPerLabel = new double[numLabels];
-			for(int i=0; i<numLabels; i++)
-				entropyPerLabel[i] = 0;
-		   
-			resetMeasureOfDifficulty();
-		   
+		   for(int i=0; i<genotype.length; i++)
+		   {
+			   votesPerLabel[i%numLabels] += genotype[i];
+		   }
+
 		   if(genotype==null)
 			  initEnsembleMatrix(); 
 		   else
 			 this.genotypeToEnsembleMatrix();
 		   
+		   Instances instances = null;
 		   for(int i = 0; i < numClassifiers; i++)
 		   {			
 			    //Transform the multilabel dataset using LP and the labels of the current individual's classifier
-				Instances instances = transformInstances(multilabelDatasetTrain, i);	
+				instances = transformInstances(multilabelDatasetTrain, i);	
 			   
 				// build a MultiLabelLearner for the selected label subset;
 				try {
-					//Try to get a classifier from the tableClassifiers
 					
-					String s = new String();
-					
+					//Try to get a classifier from the tableClassifiers					
+					String s = new String();					
 					for(int j=0; j<numLabels; j++)
 					{
 						s = s+EnsembleMatrix[i][j];
 					}
-
 					
 					if(tableClassifiers.get(s) == null)
 					{
@@ -427,30 +374,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	                 k++;
 	              }
 	           }	       
-	     }
-	    
-	    //For measureOfDifficulty
-	    for(int label=0; label<numLabels; label++)
-	    {
-	    	difficultyMatrix[label][numCorrectPredictions[label]]++;
-	    }
-	    
-	    //For entropy
-	   /*
-	    * The min between {numOfCorrectVotes, votes - numOfCorrectVotes} == {nupOfPositiveVotes, votes - numOfPositiveVotes}
-	    * 																		   without knowing the real output
-	    */
-	    for(int label=0; label<numLabels; label++)
-	    {
-	    	//If there are 1 or 0 votes for a label, the entropy is 0 -> floor(0) == floor(0.5) == 0 -> Zero division
-	    	if(sumVotes[label] <= 1)
-	    		entropyPerLabel[label] += 0;
-	    	else if(sumVotes[label] < (votesPerLabel[label] - sumVotes[label]))
-	    		entropyPerLabel[label] += (sumVotes[label]) / (Math.floor((double)votesPerLabel[label] / 2));
-	    	else
-	    		entropyPerLabel[label] += (votesPerLabel[label] - sumVotes[label]) / (Math.floor((double)votesPerLabel[label] / 2));
-	    }
-	      
+	     }	      
 	    
 	     double[] confidence1 = new double[numLabels];
 	     double[] confidence2 = new double[numLabels];

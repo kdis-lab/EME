@@ -55,10 +55,10 @@ public class IntraModelMutator extends BinArrayMutator
 		byte [] mgenome = new byte[gl];
 		System.arraycopy(mutant.getGenotype(), 0, mgenome, 0, gl);
 		
+		int mp1, mp2;
 		for (int i = 0; i < (gl/numberLabels); i++) 
 		{
-			int mp1 = randgen.choose(i*numberLabels, (i+1)*numberLabels);
-			int mp2;
+			mp1 = randgen.choose(i*numberLabels, (i+1)*numberLabels);
 			do{
 				mp2 = randgen.choose(i*numberLabels, (i+1)*numberLabels);
 			}while(mp1==mp2);

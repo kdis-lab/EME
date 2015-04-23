@@ -67,10 +67,13 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 		}
 		
 		//For each base classifier
+		int mp1;
+		double [] acc = new double[numberLabels];
+		double rand;
+		
 		for (int i = 0; i < (gl/numberLabels); i++) 
 		{
 			//Choose a '1'
-			int mp1;
 			do{
 				mp1 = randgen.choose(i*numberLabels, (i+1)*numberLabels);
 			}while(mgenome[mp1] != 1);
@@ -96,7 +99,6 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 
 			
 			//Accumulate values
-			double [] acc = new double[numberLabels];
 			acc [0] = mut[i*numberLabels];
 			for(int j=1; j<numberLabels; j++)
 			{
@@ -104,7 +106,7 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 			}
 			
 			//Select the bit to mutate
-			double rand = randgen.uniform(0, acc[numberLabels-1]);
+			rand = randgen.uniform(0, acc[numberLabels-1]);
 
 			for(int j=0; j<numberLabels; j++)
 			{

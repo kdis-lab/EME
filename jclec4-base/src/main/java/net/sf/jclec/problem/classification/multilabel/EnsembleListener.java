@@ -35,6 +35,7 @@ import mulan.evaluation.measure.HierarchicalLoss;
 import mulan.evaluation.measure.IsError;
 import mulan.evaluation.measure.LogLoss;
 import mulan.evaluation.measure.MacroAUC;
+import mulan.evaluation.measure.MacroAverageMeasure;
 import mulan.evaluation.measure.MacroFMeasure;
 import mulan.evaluation.measure.MacroPrecision;
 import mulan.evaluation.measure.MacroRecall;
@@ -425,6 +426,16 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 			for (Measure m : results.getMeasures())
 		    { 
 				file.write("\n"+m.getName()+": "+df4.format(m.getValue()));
+				
+				//if( (m.getName().contains("Micro")) || (m.getName().contains("Micro")))
+				if(m.getClass().getName().contains("Macro"))
+				{
+					for(int l=0; l<dataset.getNumLabels(); l++)
+					{
+						file.write("\n\t" + m.getName() + " " + dataset.getLabelNames()[l] + ": " +  + ((MacroAverageMeasure) m).getValue(l));
+					}
+				}
+				
 				cab=cab+m.getName()+", ";				
 		    }
 			cab=cab+"number of evaluations, evaluation time, execution time\n";
@@ -450,6 +461,14 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 			for (Measure m : results.getMeasures())
 		    { 	
 				bw.write(m.getValue() + ",");
+				
+				if(m.getClass().getName().contains("Macro"))
+				{
+					for(int l=0; l<dataset.getNumLabels(); l++)
+					{
+						bw.write(((MacroAverageMeasure) m).getValue(l) + ",");
+					}
+				}
 		    }
 			
 			bw.write(algorithm.getEvaluator().getNumberOfEvaluations() + ",");

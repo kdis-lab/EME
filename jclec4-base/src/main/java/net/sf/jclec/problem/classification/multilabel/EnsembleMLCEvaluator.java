@@ -9,6 +9,7 @@ import mulan.data.MultiLabelInstances;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.transformation.LabelPowerset;
 import mulan.evaluation.Evaluation;
+import mulan.evaluation.Evaluator;
 import mulan.evaluation.measure.HammingLoss;
 import mulan.evaluation.measure.Measure;
 import weka.classifiers.trees.J48;
@@ -77,12 +78,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	
 	/* Indicates if the individual fitness contemplates the phi correlation between labels */
 	private boolean phiInFitness;
-	
-	/* Indicates if the entropy is used in fitness */
-	private boolean useEntropy;
-	
-	/* Indicates if the measure of difficulty is used in fitness */
-	private boolean useMeasureOfDifficulty;
 	
 	/* Indicates if the coverage is used in fitness */
 	private boolean useCoverage;
@@ -183,19 +178,11 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	 {
 		 this.phiInFitness = phiInFitness;
 	 }
-	 
-	 public void setUseEntropy(boolean useEntropy)
+
+	 public void setUseCoverage(boolean useCoverage) 
 	 {
-		 this.useEntropy = useEntropy;
-	 }
-	 
-	 public void setUseMeasureOfDifficulty(boolean useMeasureOfDifficulty) {
-		this.useMeasureOfDifficulty = useMeasureOfDifficulty;
-	}
-	 
-	 public void setUseCoverage(boolean useCoverage) {
 		this.useCoverage = useCoverage;
-	}
+	 }
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------ Overwriting AbstractEvaluator methods
@@ -206,113 +193,108 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	{
 		// Individual genotype
 		byte[] genotype = ((BinArrayIndividual) ind).getGenotype();
-		
-		// Create classifier
+
 		EnsembleClassifier classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());
 		
-//		EntropyEvaluator eval = new EntropyEvaluator();          
-		MeasureOfDifficultyEvaluator eval = new MeasureOfDifficultyEvaluator();
+		Evaluator eval = new Evaluator();
 
         try {
-        	    // Build classifier using train data
-        	    classifier.build(datasetTrain);
+        	// Build classifier using train data
+        	classifier.build(datasetTrain);
         	    
-        	    List<Measure> measures = new ArrayList<Measure>();  
-        	    //Add only the measure to use
-  	       	  	measures.add(new HammingLoss());
-  	       	  	Evaluation results;
+        	List<Measure> measures = new ArrayList<Measure>();  
+        	//Add only the measure to use
+  	       	measures.add(new HammingLoss());
+  	       	Evaluation results;
   	       	  	
-  	       	  	// Obtain ensembleMatrix
-  	       	  	byte [][] ensembleMatrix = classifier.getEnsembleMatrix();
-  	       	  	String s = classifier.getOrderedStringFromEnsembleMatrix();
+  	       	// Obtain ensembleMatrix
+  	       	byte [][] ensembleMatrix = classifier.getEnsembleMatrix();
+  	       	String s = classifier.getOrderedStringFromEnsembleMatrix();
   	       	  	
-  	       	  	double fitness = -1;
-  	       	  	//Try to get the individual fitness from the table
-  	       	  	if(tableFitness.containsKey(s))
-  	       	  	{
-  	       	  		fitness = tableFitness.get(s).doubleValue();
-  	       	  	}
-  	       	  	else
-  	       	  	{
-  	       	  		//Calculate base fitness (1-HLoss) with validation set
-  	       	  		results = eval.evaluate(classifier, datasetValidation, measures);
-  	       	  		fitness = 1 - results.getMeasures().get(0).getValue();
-//  	       	  		System.out.println("HLoss: " + fitness);
+  	       	double fitness = -1;
+  	       	//Try to get the individual fitness from the table
+  	       	if(tableFitness.containsKey(s))
+  	       	{
+  	       		fitness = tableFitness.get(s).doubleValue();
+  	       	}
+  	       	else
+  	       	{
+  	       		//Calculate base fitness (1-HLoss) with validation set
+  	       		results = eval.evaluate(classifier, datasetValidation, measures);
+  	       		fitness = 1 - results.getMeasures().get(0).getValue();
   	       	  		
-     	  			if(phiInFitness)
-     	  			{
-     	  				/*
-	       	  			 * Introduces Phi correlation in fitness
-	       	  			 * 	Maximize [(1-HLoss) + PhiSum]
-	       	  			 */
+     	  		if(phiInFitness)
+     	  		{
+     	  			/*
+	       	  		 * Introduces Phi correlation in fitness
+	       	  		 * 	Maximize [(1-HLoss) + PhiSum]
+	       	  		 */
 	       	  			   	  	       	  			
-	       	  			double phiTotal = 0;
-	       	  			
-	       	  			//Calculate sumPhi for all base classifiers
-	       	  			for(int c=0; c<getNumberClassifiers(); c++)
+	       	  		double phiTotal = 0;
+//	       	  		double minPhi = Double.MAX_VALUE;
+	       	  		
+	       	  		double sumPhi, phiActual;
+	       	  		int active;
+
+	       	  		//Calculate sumPhi for all base classifiers
+	       	  		for(int c=0; c<getNumberClassifiers(); c++)
+	       	  		{
+	       	  			sumPhi = 0;
+	       	  			active = 0;
+	       	  			//calculate sum of phi label correlations for a base classifier
+	       	  			for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
 	       	  			{
-	       	  				double sumPhi = 0;
-	       	  				int active = 0;
-	       	  				//calculate sum of phi label correlations for a base classifier
-	       	  				for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
-	       	  				{
-	       	  					if(ensembleMatrix[c][i] == 1)
-	       	  						active ++;
+	       	  				if(ensembleMatrix[c][i] == 1)
+	       	  					active ++;
 	       	  					
-	       	  					for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
+	       	  				for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
+	       	  				{
+	       	  					if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
 	       	  					{
-	       	  						if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-	       	  						{
-	       	  							if(!Double.isNaN(phiMatrix[i][j]))
-	       	  								sumPhi += Math.abs(phiMatrix[i][j]);
-	       	  						}
+	       	  						if(!Double.isNaN(phiMatrix[i][j]))
+	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
 	       	  					}
 	       	  				}
-	       	  				
-	       	  				phiTotal += sumPhi/active;
 	       	  			}
+	       	  			
+	       	  			phiActual = sumPhi/(double)active;
+//	       	  			if(phiActual<minPhi)
+//	       	  				minPhi = phiActual;
+	       	  			phiTotal += phiActual;
+	       	  		}
 	       	  		
-	       	  			phiTotal = phiTotal/getNumberClassifiers();
-	       	  			//Maximize [(1-HLoss) + PhiSum]
-	       	  			fitness = fitness + phiTotal;
-     	  			}
+	       	  		phiTotal = phiTotal/(double)getNumberClassifiers();
+	       	  		System.out.println("phiTotal: " + phiTotal);
+	       	  		//Maximize [(1-HLoss) + PhiSum]
+	       	  		fitness = fitness + phiTotal;
+	       	  			
+//	       	  		System.out.println("minPhi: " + minPhi);
+//	       	  		fitness = fitness + minPhi;
+     	  		}
      	  			
-     	  			if(useEntropy)
+     	  		if(useCoverage)
+     	  		{
+     	  			int [] v = classifier.getVotesPerLabel();
+     	  			double expectedVotes = 0;
+     	  			for(int i=0; i<v.length; i++)
      	  			{
-//     	  				System.out.println("classifier entropy: " + classifier.getEntropy());
-     	  				System.out.println("Entropy: " + classifier.getEntropy());
-//     	  				fitness = fitness + classifier.getEntropy();
+     	  				expectedVotes += v[i];
      	  			}
-     	  			
-     	  			if(useMeasureOfDifficulty)
-     	  			{
-//     	  				System.out.println("classifier measure of difficulty: " + classifier.getMeasureOfDifficulty());
-     	  				fitness = fitness - classifier.getMeasureOfDifficulty();
-//     	  				System.out.println("MoD: " + classifier.getMeasureOfDifficulty());
-     	  			}
-     	  			
-     	  			if(useCoverage)
-     	  			{
-     	  				int [] v = classifier.getVotesPerLabel();
-     	  				double expectedVotes = 0;
-     	  				for(int i=0; i<v.length; i++)
-     	  					expectedVotes += v[i];
-     	  				expectedVotes = expectedVotes/v.length;
-     	  				//System.out.println("expectedVotes: " + expectedVotes);
-     	  				double distance = 0;
-     					for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
-     					{
-     						distance += (double)Math.pow(expectedVotes - v[i], 2);
-     					}
-     					
-     					distance = Math.sqrt(distance) / datasetTrain.getNumLabels();
-     					fitness = fitness - distance;
-     					//System.out.println("distance: " + distance + " -> fitness: " + fitness);
-     	  			}
-//  	       	  		
-	  				
-  	       	  		tableFitness.put(s, fitness);
-  	       	  	}
+     	  			expectedVotes = expectedVotes/v.length;
+     	  			//System.out.println("expectedVotes: " + expectedVotes);
+     	  			double distance = 0;
+     				for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
+     				{
+     					distance += (double)Math.pow(expectedVotes - v[i], 2);
+     				}
+     				
+     				distance = Math.sqrt(distance) / datasetTrain.getNumLabels();
+     				fitness = fitness - distance;
+//     				System.out.println("distance: " + distance + " -> fitness: " + fitness);
+     	  		}
+     	  		
+  	       	  	tableFitness.put(s, fitness);
+  	       	}
   	       	  	
 //  	       	  	System.out.println("Fitness: " + fitness);
   	       	  	ind.setFitness(new SimpleValueFitness(fitness));

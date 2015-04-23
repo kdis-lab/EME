@@ -22,12 +22,21 @@
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.MeasureOfDifficultyEvaluator"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.rec.ModelCrossover"/>
 <fullyQualifiedTypeName name="weka.classifiers.trees.DecisionStump"/>
-<fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
-<fullyQualifiedTypeName name="java.lang.System"/>
 <fullyQualifiedTypeName name="mulan.evaluation.Evaluator"/>
 <fullyQualifiedTypeName name="net.sf.jclec.binarray.BinArrayIndividual"/>
 <fullyQualifiedTypeName name="net.sf.jclec.fitness.SimpleValueFitness"/>
 <fullyQualifiedTypeName name="net.sf.jclec.selector.BettersSelector"/>
 <fullyQualifiedTypeName name="net.sf.jclec.IIndividual"/>
 <fullyQualifiedTypeName name="net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator"/>
+<fullyQualifiedTypeName name="java.lang.System"/>
+<fullyQualifiedTypeName name="java.lang.ArrayStoreException"/>
+<fullyQualifiedTypeName name="java.util.Arrays"/>
+<fullyQualifiedTypeName name="mulan.classifier.transformation.PrunedSets"/>
+<fullyQualifiedTypeName name="mulan.classifier.transformation.LabelPowerset"/>
+<fullyQualifiedTypeName name="java.lang.String"/>
+<fullyQualifiedTypeName name="mulan.evaluation.measure.Measure"/>
+<fullyQualifiedTypeName name="mulan.evaluation.measure.MacroPrecision"/>
+<fullyQualifiedTypeName name="mulan.evaluation.measure.MacroAverageMeasure"/>
+<fullyQualifiedTypeName name="java.lang.Double"/>
+<fullyQualifiedTypeName name="mulan.evaluation.measure.MacroFMeasure"/>
 </qualifiedTypeNameHistroy>
