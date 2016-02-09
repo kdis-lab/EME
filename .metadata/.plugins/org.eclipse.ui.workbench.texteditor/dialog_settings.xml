@@ -1,28 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
-	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item value="309" key="DIALOG_WIDTH"/>
-		<item value="109" key="DIALOG_Y_ORIGIN"/>
-		<item value="1149" key="DIALOG_X_ORIGIN"/>
-		<item value="536" key="DIALOG_HEIGHT"/>
-		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+	<section name="org.eclipse.ui.texteditor.GotoLineAction$GotoLineDialog_dialogBounds">
+		<item value="310" key="DIALOG_Y_ORIGIN"/>
+		<item value="493" key="DIALOG_X_ORIGIN"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item value="true" key="wrap"/>
-		<item value="false" key="casesensitive"/>
 		<item value="false" key="isRegEx"/>
+		<item value="randG" key="selection"/>
+		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
+		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
-		<item value="EnsembleMLCEvaluator" key="selection"/>
 		<list key="findhistory">
-			<item value="EnsembleMLCEvaluatorII"/>
-			<item value="EnsembleMLCEvaluator"/>
-			<item value="cove"/>
-			<item value="active: 1"/>
-			<item value="maxSubsetSize"/>
-			<item value="MaxSubsetSize"/>
-			<item value="maxLabels"/>
-			<item value="numberLabelsClassifier"/>
+			<item value="randg"/>
+			<item value="randG"/>
+			<item value="create"/>
+			<item value="creat"/>
+			<item value="createR"/>
+			<item value="randge"/>
+			<item value="randGen"/>
+			<item value="rand"/>
 		</list>
 		<list key="replacehistory">
 			<item value="EnsembleMLCEvaluator"/>
@@ -31,5 +28,12 @@
 			<item value="maxNumberLabelsClassifier"/>
 			<item value=""/>
 		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="289" key="DIALOG_WIDTH"/>
+		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="544" key="DIALOG_HEIGHT"/>
+		<item value="332" key="DIALOG_Y_ORIGIN"/>
+		<item value="838" key="DIALOG_X_ORIGIN"/>
 	</section>
 </section>

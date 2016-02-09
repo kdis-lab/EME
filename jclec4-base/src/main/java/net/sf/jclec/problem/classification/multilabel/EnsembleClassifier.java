@@ -1,12 +1,15 @@
 package net.sf.jclec.problem.classification.multilabel;
 
 import mulan.data.InvalidDataFormatException;
+import mulan.data.LabelsMetaDataImpl;
 import mulan.data.MultiLabelInstances;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Random;
 
+import weka.classifiers.trees.J48;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
@@ -16,7 +19,9 @@ import mulan.classifier.ModelInitializationException;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
 import mulan.classifier.meta.MultiLabelMetaLearner;
+import mulan.classifier.transformation.BinaryRelevance;
 import net.sf.jclec.util.random.IRandGen;
+import net.sf.jclec.util.random.Ranecu;
 
 
 public class EnsembleClassifier extends MultiLabelMetaLearner
@@ -50,11 +55,11 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	/* Size of the subset of labels of each base classifier */
 	protected int[] SizeSubsets;
 	
-	/* Filter to remove the non-active labels */
-	protected Remove[] Filters;
-	
 	/* Binary matrix that identifies the ensemble */
 	protected byte EnsembleMatrix[][]=null;
+	
+	/* Binary matrix that identifies the labels that will be attributes */
+	protected byte ExtendMatrix[][]=null;
 	
 	/* Indicates if the number of active labels is variable for each base classifier */
 	protected boolean variable=false;
@@ -70,14 +75,17 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	
 	/* Array with number of votes of the ensemble for each label */
 	private int [] votesPerLabel;
-
 	
+	/* Learner to predict the labels to use as attributes */
+	private MultiLabelLearner predictor;
+
 
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
 	/////////////////////////////////////////////////////////////////
 	
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, 
+			byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen, MultiLabelLearner predictor)
 	{
 		super(baseLearner);
 		this.maxSubsetSize = maxSubsetSize;
@@ -86,59 +94,26 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    this.variable = variable;
 		this.genotype = genotype;
 		this.tableClassifiers = tableClassifiers;
-		this.randGen = randGen;		
+		this.randGen = randGen;	
+		try {
+			this.predictor = predictor.makeCopy();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
-	//Constructor without numClassifiers
-	public EnsembleClassifier(int maxSubsetSize, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = -1;
-		this.threshold = threshold;
-	    this.variable = variable;
-		this.genotype = genotype;
-		this.tableClassifiers = tableClassifiers;
-		this.randGen = randGen;
-	}
-	
-	//Constructor without genotype
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, Hashtable<String, MultiLabelLearner> tableClassifiers, IRandGen randGen)
+	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner)
 	{
 		super(baseLearner);
 		this.maxSubsetSize = maxSubsetSize;
 		this.numClassifiers = numClassifiers;
 		this.threshold = threshold;
 	    this.variable = variable;
-		this.tableClassifiers = tableClassifiers;
-		this.randGen = randGen;
+		this.genotype = null;
+		this.tableClassifiers = new Hashtable<String, MultiLabelLearner>();
+		this.randGen = new Ranecu(1, 2);	
+		this.predictor = null;		
 	}
-	
-	//Constructor without tableClassifiers
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, byte[] genotype, IRandGen randGen)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = numClassifiers;
-		this.threshold = threshold;
-	    this.variable = variable;
-		this.genotype = genotype;
-		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
-		this.randGen = randGen;
-	}
-	
-	//Constructor without genotype and tableClassifiers
-	public EnsembleClassifier(int maxSubsetSize, int numClassifiers, double threshold, boolean variable, MultiLabelLearner baseLearner, IRandGen randGen)
-	{
-		super(baseLearner);
-		this.maxSubsetSize = maxSubsetSize;
-		this.numClassifiers = numClassifiers;
-		this.threshold = threshold;
-	    this.variable = variable;
-		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
-		this.randGen = randGen;
-	}
-		
 	
 	
 	/////////////////////////////////////////////////////////////////
@@ -225,46 +200,6 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return str;
 	}
 	
-	/*
-	 * Classify a set of instances
-	 * 
-	 * Calculate entropy
-	 */
-	public int[][] classify(MultiLabelInstances mlData)
-	{		
-		int[][] predictions = new int[mlData.getNumInstances()][numLabels];
-
-		Instances data = mlData.getDataSet();
-		
-		MultiLabelOutput mlo = null;
-		
-		for (int i=0; i<mlData.getNumInstances(); i++)
-		{ 	
-		    try {
-				mlo = this.makePrediction(data.get(i));
-				for(int j=0; j<this.numLabels; j++)
-				{	
-					if(mlo.getBipartition()[j])
-					{
-						predictions[i][j]=1;
-					}	
-					else
-					{
-						predictions[i][j]=0;
-					}	  
-				}
-				
-			} catch (InvalidDataException e) {
-				e.printStackTrace();
-			} catch (ModelInitializationException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		    
-		}
-		return(predictions);		
-	}
 	
 	
 	/*
@@ -281,104 +216,99 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   if (this.numClassifiers>(Math.pow(2, this.numLabels))/2) // 0011 and 1100 are the same classifier
 			   throw new Exception("The number of models exceed the number of combinations");
 		   
-		   Ensemble = new MultiLabelLearner[numClassifiers];		
-		   Filters = new Remove[numClassifiers];	
+		   Ensemble = new MultiLabelLearner[numClassifiers];	
 		   
+		   if(genotype==null){
+			   initEnsembleMatrix(); 
+		   } 
+		   else{
+			   this.genotypeToEnsembleMatrix();
+		   }
+
+
 		   votesPerLabel = new int[numLabels];
 		   for(int i=0; i<genotype.length; i++)
 		   {
 			   votesPerLabel[i%numLabels] += genotype[i];
 		   }
-
-		   if(genotype==null)
-			  initEnsembleMatrix(); 
-		   else
-			 this.genotypeToEnsembleMatrix();
 		   
-		   Instances instances = null;
-		   for(int i = 0; i < numClassifiers; i++)
-		   {			
-			    //Transform the multilabel dataset using LP and the labels of the current individual's classifier
-				instances = transformInstances(multilabelDatasetTrain, i);	
-			   
-				// build a MultiLabelLearner for the selected label subset;
-				try {
-					
-					//Try to get a classifier from the tableClassifiers					
-					String s = new String();					
-					for(int j=0; j<numLabels; j++)
-					{
-						s = s+EnsembleMatrix[i][j];
-					}
-					
-					if(tableClassifiers.get(s) == null)
-					{
-						//Build the classifier and put in the table
-						Ensemble[i] = getBaseLearner().makeCopy();
-			        	Ensemble[i].build(this.multilabelDatasetTrain.reintegrateModifiedDataSet(instances));	
-			        	tableClassifiers.put(s, Ensemble[i]);
-					}
-					else
-					{
-						//Get the classifier from the table
-						Ensemble[i] = tableClassifiers.get(s);
-					}					
-				} catch (InvalidDataException e) {	
-					e.printStackTrace();
-				} catch (InvalidDataFormatException e){
-					e.printStackTrace();
+		   labelNames = multilabelDatasetTrain.getLabelNames();
+		   
+		   if(predictor == null){
+			   try {
+					predictor = new BinaryRelevance(new J48());
+					predictor.build(multilabelDatasetTrain);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-		  
+		   }
+		   
+		   //Key for tableClassifiers
+		   String keyClassifier = new String();
+		   
+		   for(int i = 0; i < numClassifiers; i++)
+		   {		
+			   //Try to get built classifier
+			   keyClassifier = Arrays.toString(EnsembleMatrix[i]);
+			   
+			   if(tableClassifiers.get(keyClassifier) != null){
+				   //Obtain classifier
+				   Ensemble[i] = tableClassifiers.get(keyClassifier).makeCopy();
+			   }
+			   else{ //Build the classifier and put in the table				   
+				   //Get base learner
+				   Ensemble[i] = getBaseLearner().makeCopy();
+  		
+				   //Build classifier and put in the table
+				   Ensemble[i].build(transformInstances(multilabelDatasetTrain, i));	
+				   tableClassifiers.put(keyClassifier, Ensemble[i]);
+			   }
+
 			}
 		   
-		}
+	}
 	 
-	
-	/*
-	 * Make prediction of the ensemble for a instance
-	 */
+
+
 	@Override
 	protected MultiLabelOutput makePredictionInternal(Instance instance) throws Exception
-	{
+	{		
 	    double[] sumConf = new double[numLabels];
 	    double[] sumVotes = new double[numLabels];
 	    double[] lengthVotes = new double[numLabels];
+
+	    //Instance copy
+	    //If instance is not copied, the changes in it will be too in original instance
+	    Instance extInstance = null;
 	    
-	    int[] numCorrectPredictions = new int[numLabels];
+	    //Preduction of a classifier
+	    MultiLabelOutput subsetMLO = null;
 	    
-	    // gather votes
+	    //Extend instance with predicted label values to use as attributes
+	    extInstance = transformInstance(instance);
 	    for (int model = 0; model < numClassifiers; model++) 
-	    {
-	    	boolean [] trueLabels = getTrueLabels(instance, numLabels, multilabelDatasetTrain.getLabelIndices());
-	        
-	    	Filters[model].input(instance);
-	        Filters[model].batchFinished();
-	        Instance newInstance = Filters[model].output();
-	        MultiLabelOutput subsetMLO = Ensemble[model].makePrediction(newInstance);
-	        	
-	           for (int label=0, k=0; label < numLabels; label++)
-	           { 
-	          
-	              if (EnsembleMatrix[model][label]==1)
-	              {	
-	        	     sumConf[label] += subsetMLO.getConfidences()[k];
-	                 sumVotes[label] += subsetMLO.getBipartition()[k] ? 1 : 0;
-	                 lengthVotes[label]++;
-	                 
-	                 //For measureOfDifficulty
-	                 if(subsetMLO.getBipartition()[k] == trueLabels[label]) //correct prediction
-	                	 numCorrectPredictions[label]++;
-	                 
-	                 k++;
-	              }
-	           }	       
+	    {	
+	    	subsetMLO = Ensemble[model].makePrediction(extInstance);
+	    	
+	        //Sum votes
+	        for (int label=0, k=0; label < numLabels; label++)
+	        {   
+	           if (EnsembleMatrix[model][label]==1)
+	           {	
+	        	   sumConf[label] += subsetMLO.getConfidences()[k];
+	        	     
+	               sumVotes[label] += subsetMLO.getBipartition()[k] ? 1 : 0;
+	               lengthVotes[label]++;
+	                k++;
+	            }
+	         }	       
 	     }	      
 	    
+	    //Calculate ensemble predictions
 	     double[] confidence1 = new double[numLabels];
 	     double[] confidence2 = new double[numLabels];
 	     boolean[] bipartition = new boolean[numLabels];
+
 	        
 	     for (int i = 0; i < numLabels; i++)
 	     {
@@ -392,56 +322,96 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	             confidence2[i] = 0;
 	         }
 	         
-	         if (confidence2[i] >= threshold) {
+	         if (confidence1[i] >= threshold) {
 	             bipartition[i] = true;
 	         } else {
 	             bipartition[i] = false;
 	         }
+	         
 	     }
 
 	     MultiLabelOutput mlo = new MultiLabelOutput(bipartition, confidence1);
+	     
 	     return mlo;
 	}	
-
-
-
-	/////////////////////////////////////////////////////////////////
-	// ---------------------------------------------- protected methods
-	/////////////////////////////////////////////////////////////////	
-	protected Instances transformInstances(MultiLabelInstances mlData, int model) throws Exception
-	{   
-		int labelsToRemove[]=new int[numLabels-SizeSubsets[model]];
-	    Instances data = mlData.getDataSet();
-	    
-	    for (int label=0, k=0; k <(numLabels-SizeSubsets[model]); label++)
-	    {
-	        if (EnsembleMatrix[model][label] == 0)
-	        {  	
-	        	labelsToRemove[k]=labelIndices[label];
-	        	k++;
-	        }
-	    }	       
-	    Filters[model] = new Remove();
-	    Filters[model].setAttributeIndicesArray(labelsToRemove);	    
-	    try 
-	    {
-		    Filters[model].setInputFormat(data);
-	    }		
-		catch (Exception e)
-		{
-			e.printStackTrace();
+	
+	
+	
+	protected MultiLabelInstances transformInstances(MultiLabelInstances mlData, int numModel) 
+			throws InvalidDataFormatException{
+				
+		//Get actual LabelsMetaData
+		 LabelsMetaDataImpl lMeta = (LabelsMetaDataImpl) mlData.getLabelsMetaData().clone();
+	        	
+		for(int i=0; i<numLabels; i++){
+			if(EnsembleMatrix[numModel][i] == 0){
+				lMeta.removeLabelNode(labelNames[i]);
+			}
 		}
-	    Filters[model].setInvertSelection(false);
-	    Instances trainSubset = Filter.useFilter(data, Filters[model]);
-	        
-        return(trainSubset);		
+		
+		return(new MultiLabelInstances(mlData.getDataSet(), lMeta));
 	}
 	
+	
+	protected Instance transformInstance(Instance instance, int numModel){
+		
+		Instance extInstance = (Instance) instance.copy();
+		
+		try {
+			MultiLabelOutput predict = predictor.makePrediction(extInstance);
+			
+			for(int i=0; i<numLabels; i++){
+				
+				if(EnsembleMatrix[numModel][i] == 0){
+					if(predict.getBipartition()[i] == true){
+						extInstance.setValue(labelIndices[i], 1);
+					}
+					else if(predict.getBipartition()[i] == false){
+						extInstance.setValue(labelIndices[i], 0);
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return(extInstance);
+	}
+	
+	
+	protected Instance transformInstance(Instance instance){
+		
+		Instance extInstance = (Instance) instance.copy();
+		
+		try {
+			MultiLabelOutput predict = predictor.makePrediction(extInstance);
+			
+			for(int i=0; i<numLabels; i++){
+				if(predict.getBipartition()[i] == true){
+					extInstance.setValue(labelIndices[i], 1);
+				}
+				else if(predict.getBipartition()[i] == false){
+					extInstance.setValue(labelIndices[i], 0);
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return(extInstance);
+	}
+	
+
 	
 	protected void initEnsembleMatrix()
 	{
 		EnsembleMatrix = new byte[numClassifiers][numLabels];		
+		ExtendMatrix = new byte[numClassifiers][numLabels];
 		SizeSubsets = new int[numClassifiers];
+		
+		genotype = new byte[numClassifiers*numLabels];
 	    
 		HashSet<String> Combinations = new HashSet<String>();
 		   
@@ -463,6 +433,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   {	   
 		      visited[label]=false;
 		      EnsembleMatrix[model][label]=0;
+		      genotype[model*numLabels+label] = 0;
 		      comb2.append('0');
 		   }
 		   
@@ -470,20 +441,22 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   {
                //Random selection of one label		
 //               int randomLabel=rand.nextInt(numLabels);
-			   int randomLabel=randGen.choose(numLabels);
+			   int randomLabel=randGen.choose(numLabels+1)-1;
                if(!visited[randomLabel])
                {	   
 			      visited[randomLabel]=true;
 			      EnsembleMatrix[model][randomLabel]=1;
+			      genotype[model*numLabels+randomLabel] = 1;
 			      comb2.setCharAt(randomLabel, '1');
 			      label++;
                }   
 		   }		
-			 
+		   
 		   if(checkModel(model)==true && Combinations.add(comb2.toString())==true)
 		   {   		   
 			    model++;                 
-		   }   
+		   } 
+		  
 		 }
 	}
 	
@@ -510,6 +483,7 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
     protected void genotypeToEnsembleMatrix()
     {    	
     	EnsembleMatrix = new byte[numClassifiers][numLabels];
+    	ExtendMatrix = new byte[numClassifiers][numLabels];
     	SizeSubsets = new int[numClassifiers];
     	
         for(int model=0; model<numClassifiers; model++)
@@ -558,18 +532,5 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		
 		return s2;
 	}
-    
-    
-    private boolean[] getTrueLabels(Instance instance, int numLabels, int[] labelIndices) {
-
-        boolean[] trueLabels = new boolean[numLabels];
-        for (int counter = 0; counter < numLabels; counter++) {
-            int classIdx = labelIndices[counter];
-            String classValue = instance.attribute(classIdx).value((int) instance.value(classIdx));
-            trueLabels[counter] = classValue.equals("1");
-        }
-
-        return trueLabels;
-    }
     
 }

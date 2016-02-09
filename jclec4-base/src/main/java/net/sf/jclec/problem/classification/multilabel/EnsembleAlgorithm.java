@@ -1,13 +1,24 @@
 package net.sf.jclec.problem.classification.multilabel;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 
 import mulan.data.LabelPowersetStratification;
 import mulan.data.MultiLabelInstances;
 import mulan.data.Statistics;
+import mulan.evaluation.Evaluation;
+import mulan.evaluation.Evaluator;
+import mulan.evaluation.measure.HammingLoss;
+import mulan.evaluation.measure.Measure;
 import mulan.classifier.MultiLabelLearner;
+import mulan.classifier.transformation.BinaryRelevance;
+import mulan.classifier.transformation.ClassifierChain;
+import mulan.classifier.transformation.EnsembleOfClassifierChains;
 import mulan.classifier.transformation.LabelPowerset;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
@@ -33,6 +44,9 @@ public class EnsembleAlgorithm extends SGE
 	
 	/* Dataset to build the ensembles */
 	private MultiLabelInstances datasetTrain;
+	
+	/* Dataset to build the ensembles */
+	private MultiLabelInstances fullDatasetTrain;
 	
 	/* Dataset to evaluate the individuals */
 	private MultiLabelInstances datasetValidation;
@@ -61,6 +75,9 @@ public class EnsembleAlgorithm extends SGE
 	/* Table that stores the fitness of all evaluated individuals */
 	private Hashtable<String, Double> tableFitness;
 	
+	/* Table that stores the phi fitness values of all base classifiers */
+	private Hashtable<String, Double> tablePhi;
+	
 	/* Indicates if a validation set is used to evaluate the individuals */
 	private boolean useValidationSet;
 	
@@ -69,6 +86,19 @@ public class EnsembleAlgorithm extends SGE
 
 	/* Indicates if the coverage is used in fitness */
 	private boolean useCoverage;
+	
+	/* Learner to predict the labels to use as attributes */
+	private MultiLabelLearner labelsPredictor;
+	
+	/* Phi matrix */
+	double [][] phi;
+	
+	/* Classifier to use to extend instances with predictions of non-used labels */
+	String labelsPredictorType;
+	
+	/* Base classifier */
+	String baseClassifierType;
+
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
@@ -84,6 +114,7 @@ public class EnsembleAlgorithm extends SGE
 		
 		tableClassifiers = new Hashtable<String, MultiLabelLearner> ();
 		tableFitness = new Hashtable<String, Double> ();
+		tablePhi = new Hashtable<String, Double> ();
 	}
 	
 	/////////////////////////////////////////////////////////////////
@@ -146,12 +177,14 @@ public class EnsembleAlgorithm extends SGE
 		super.configure(configuration);
 		
 		try {
+			/* Obtain settings */
+			
 			// Read train/test datasets
 			String datasetTrainFileName = configuration.getString("dataset.train-dataset");
 			String datasetTestFileName = configuration.getString("dataset.test-dataset");
 			String datasetXMLFileName = configuration.getString("dataset.xml");
 			
-			MultiLabelInstances fullDatasetTrain = new MultiLabelInstances(datasetTrainFileName, datasetXMLFileName);
+			fullDatasetTrain = new MultiLabelInstances(datasetTrainFileName, datasetXMLFileName);
 			datasetTest = new MultiLabelInstances(datasetTestFileName, datasetXMLFileName);			
 			
 			//Use or not a validation set to evaluate individuals
@@ -160,38 +193,48 @@ public class EnsembleAlgorithm extends SGE
 			{
 //				IterativeStratification strat = new IterativeStratification();
 				LabelPowersetStratification strat = new LabelPowersetStratification();
-				// 75% for train ; 100% for validation
-				MultiLabelInstances [] m = strat.stratify(fullDatasetTrain, 4);
-				//Train set have 3 folds
-				datasetTrain = m[0];
+				// 80% for train ; 100% for validation
+				MultiLabelInstances [] m = strat.stratify(fullDatasetTrain, 5);
+				//Train set have 4 folds
+				datasetTrain = m[0].clone();
 				datasetTrain.getDataSet().addAll(m[1].getDataSet());
 				datasetTrain.getDataSet().addAll(m[2].getDataSet());
+				datasetTrain.getDataSet().addAll(m[3].getDataSet());
 
-				//Validation set have all 4 folds
-				datasetValidation = datasetTrain;
-				datasetValidation.getDataSet().addAll(m[3].getDataSet());
-
+				//Validation set have all 5 folds
+				datasetValidation = datasetTrain.clone();
+				datasetValidation.getDataSet().addAll(m[4].getDataSet());
 			}
 			else
 			{
 				//Train and validation set are the same, the full set
-				datasetTrain = fullDatasetTrain;
+				datasetTrain = fullDatasetTrain;				
 				datasetValidation = datasetTrain;
 			}
-			
-			// Obtain settings
+
 			int numberLabels = datasetTrain.getNumLabels();
+			
 			variable = configuration.getBoolean("variable");
-			if(variable)
+			if(variable){
+				/*
+				 * If the number of labels in each base classifier is variable,
+				 *  we select sqrt(numLabels) as max number of labels for each classifier.
+				 */
 				maxNumberLabelsClassifier = (int) Math.ceil(Math.sqrt(numberLabels));
-			else
+			}
+			else{
 				maxNumberLabelsClassifier = configuration.getInt("number-labels-classifier");
+			}
+			
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
 			
 			phiInFitness = configuration.getBoolean("phi-in-fitness");
 			useCoverage = configuration.getBoolean("use-coverage");
 			
+			labelsPredictorType = configuration.getString("labels-predictor");
+			baseClassifierType = configuration.getString("base-classifier");
+
 			// Set provider settings
 			((EnsembleMLCCreator) provider).setNumberClassifiers(numberClassifiers);
 			((EnsembleMLCCreator) provider).setMaxNumberLabelsClassifier(maxNumberLabelsClassifier);
@@ -210,30 +253,51 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
 			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
 			((EnsembleMLCEvaluator) evaluator).setUseCoverage(useCoverage);
+			((EnsembleMLCEvaluator) evaluator).setTablePhi(tablePhi);
+			((EnsembleMLCEvaluator) evaluator).setBaseClassifierType(baseClassifierType);
+			
+			//Build a learner to obtain label predictions to add as attributes in test phase	
+			if(labelsPredictorType.equals("BR")){
+				System.out.println("Building BR as label attributes predictor");
+				labelsPredictor = new BinaryRelevance(new J48());
+			}
+			else if(labelsPredictorType.equals("CC")){
+				System.out.println("Building CC as label attributes predictor");
+				labelsPredictor = new ClassifierChain(new J48());
+			}
+			else{
+				System.out.println("Building BR as default label attributes predictor");
+				labelsPredictor = new BinaryRelevance(new J48());
+			}
+			
+			labelsPredictor.build(datasetTrain);
+			
+			((EnsembleMLCEvaluator) evaluator).setLabelsPredictor(labelsPredictor);
 
 			// Set genetic operator settingsS
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);
 			((UniformModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
 			
-			
 			//Calculate PhiMatrix only if its necessary
-			if((mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator")) || (phiInFitness))
+			if((mutator.getDecorated().getClass().toString().contains("PhiBased")) || (phiInFitness))
 			{
 				Statistics s = new Statistics();
-				double [][] phi = s.calculatePhi(getDatasetTrain());
+				phi = s.calculatePhi(datasetValidation);
 				
 				s.printPhiCorrelations();
 				
 				// Send Phi matrix to the mutator if it needs it
-				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
+				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator")){
 					((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
-				
-				//Send phi matrix to evaluator
-				if(phiInFitness)
-					((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
-			}
-			
+				}
 
+				//Send phi matrix to evaluator
+				if(phiInFitness){
+					((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
+				}
+			}
+
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -250,42 +314,57 @@ public class EnsembleAlgorithm extends SGE
 	
 	@Override
 	protected void doControl()
-	{				
+	{		
 		System.out.println("--- Generation " + generation + " ---");
 		System.out.println("----------------------");
 		
 		//Order the individual by fitness
 		BettersSelector bselector = new BettersSelector(this);
-		bset = bselector.select(bset);		
-		
+		bset = bselector.select(bset, bset.size());		
+
 		// If maximum number of generations is exceeded, evolution is finished
 		if (generation >= maxOfGenerations)
 		{
-			/* Build the best individual */
+			/* Get the best individual */
 			IIndividual bestInd = bselector.select(bset, 1).get(0);
+			System.out.println(bestInd.getFitness());
 			byte[] genotype = ((BinArrayIndividual) bestInd).getGenotype();
+			
+			MultiLabelLearner baseLearner = null;
+			
+			if(baseClassifierType.equals("LP")){
+				System.out.println("Using LP as base classifier");
+				J48 j48 = new J48();
+				baseLearner = new LabelPowerset(j48);
+			}
+			else if(baseClassifierType.equals("CC")){
+				System.out.println("Using CC as base classifier");
+				J48 j48 = new J48();
+				baseLearner = new ClassifierChain(j48);
+			}
+			else{
+				System.out.println("Using LP as default base classifier");
+				J48 j48 = new J48();
+				baseLearner = new LabelPowerset(j48);
+			}
 
-			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());			
+			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, 
+					variable, baseLearner, genotype, tableClassifiers, randGenFactory.createRandGen(), labelsPredictor);
+			
 			
 			try {	
+				//Build the ensemble
 				classifier.build(datasetTrain);
 				
 				/* Print the final ensemble */
 				System.out.println("Final ensemble");
-				for(int i=0; i<getNumberClassifiers(); i++)
+				for(int i=0; i<numberClassifiers; i++)
 				{
-					for(int j=0; j<getDatasetTrain().getNumLabels(); j++)
-					{
-						System.out.print(genotype[i*getDatasetTrain().getNumLabels()+j] + " ");
-					}
-					System.out.println();
+					System.out.println(Arrays.toString(classifier.EnsembleMatrix[i]));
 				}
 				
-				int [] v = classifier.getVotesPerLabel();
 				System.out.println("numVotes");
-				for(int j=0; j<getDatasetTrain().getNumLabels(); j++)
-					System.out.print(v[j] + " ");
-				System.out.println();
+				System.out.println(Arrays.toString(classifier.getVotesPerLabel()));
 				
 			} catch (Exception e) {
 				e.printStackTrace();

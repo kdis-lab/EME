@@ -15,6 +15,9 @@ import java.util.logging.Logger;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 
+import weka.core.Instances;
+import mulan.classifier.InvalidDataException;
+import mulan.classifier.ModelInitializationException;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
 import mulan.data.MultiLabelInstances;
@@ -35,6 +38,7 @@ import mulan.evaluation.measure.HierarchicalLoss;
 import mulan.evaluation.measure.IsError;
 import mulan.evaluation.measure.LogLoss;
 import mulan.evaluation.measure.MacroAUC;
+import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.MacroAverageMeasure;
 import mulan.evaluation.measure.MacroFMeasure;
 import mulan.evaluation.measure.MacroPrecision;
@@ -44,6 +48,7 @@ import mulan.evaluation.measure.MeanAverageInterpolatedPrecision;
 import mulan.evaluation.measure.MeanAveragePrecision;
 import mulan.evaluation.measure.Measure;
 import mulan.evaluation.measure.MicroAUC;
+import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.MicroFMeasure;
 import mulan.evaluation.measure.MicroPrecision;
 import mulan.evaluation.measure.MicroRecall;
@@ -93,6 +98,10 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 	
 	protected File reportDirectory;
 
+	/** Indicates if for Macro measures, returns the measure for each label */
+	
+	protected boolean obtainResultsByLabel;
+	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------------------------------- Constructors
 	/////////////////////////////////////////////////////////////////
@@ -246,6 +255,9 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		int reportFrequency = settings.getInt("report-frequency", 1);
 		// Set reportFrequency
 		setReportFrequency(reportFrequency);
+		
+		obtainResultsByLabel = settings.getBoolean("results-by-label");
+		
 	}
 
 	/////////////////////////////////////////////////////////////////
@@ -313,13 +325,15 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		// Train Report file
 		File trainReportFile = new File(reportDirectory, trainReportFilename);
 		
-		classify(algorithm.getDatasetTrain(), algorithm.getClassifier(), trainReportFile);
+		//classify(algorithm.getDatasetTrain(), algorithm.getClassifier(), trainReportFile);
+		classify(algorithm.getDatasetValidation(), algorithm.getClassifier(), trainReportFile);
+		//System.out.println("Listener: " + ((LabelPowerset)algorithm.getClassifier().getBaseLearner()).getBaseClassifier().getClass());
 		classify(algorithm.getDatasetTest(), algorithm.getClassifier(), testReportFile);
 	}
 
     protected void classify(MultiLabelInstances mldata, EnsembleClassifier classifier, File file)
     {
-		int[][] predicted = classifier.classify(mldata);
+		int[][] predicted = classify(mldata, classifier);
 		int numberLabels = mldata.getNumLabels();
 		
 		try {
@@ -344,6 +358,46 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		}
     }
     
+    /*
+	 * Classify a set of instances
+	 */
+	public int[][] classify(MultiLabelInstances mlData, EnsembleClassifier classifier)
+	{		
+		int numberLabels = mlData.getNumLabels();
+		int[][] predictions = new int[mlData.getNumInstances()][numberLabels];
+
+		Instances data = mlData.getDataSet();
+		
+		MultiLabelOutput mlo = null;
+		
+		for (int i=0; i<mlData.getNumInstances(); i++)
+		{ 	
+		    try {
+				mlo = classifier.makePrediction(data.get(i));
+				for(int j=0; j<numberLabels; j++)
+				{	
+					if(mlo.getBipartition()[j])
+					{
+						predictions[i][j]=1;
+					}	
+					else
+					{
+						predictions[i][j]=0;
+					}	  
+				}
+				
+			} catch (InvalidDataException e) {
+				e.printStackTrace();
+			} catch (ModelInitializationException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		    
+		}
+		return(predictions);		
+	}
+    
     /**
  	 * Make the classifier report over the train and test datasets
  	 * 
@@ -356,16 +410,17 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
         // Train report name
     	String trainReportFilename = "TrainClassificationReport.txt";
            	
-        MultiLabelInstances datasetTrain = algorithm.getDatasetTrain();
+        //MultiLabelInstances datasetTrain = algorithm.getDatasetTrain();
+    	MultiLabelInstances datasetTrain = algorithm.getDatasetValidation();
         MultiLabelInstances datasetTest = algorithm.getDatasetTest();        
         
         //Build the classifier ENSURE IT WAS INICIALIZED WITH THE GENOTYPE!!!
         EnsembleClassifier classifier = algorithm.getClassifier();
-    	try {
-    		 classifier.build(datasetTrain);
-    	}catch (Exception e1) {
-    		 e1.printStackTrace();
-    	}   	
+//    	try {
+//    		 classifier.build(datasetTrain);
+//    	}catch (Exception e1) {
+//    		 e1.printStackTrace();
+//    	}   	
     	
 		// Check if the report directory name is in a file
 		String aux = "";
@@ -427,18 +482,23 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		    { 
 				file.write("\n"+m.getName()+": "+df4.format(m.getValue()));
 				
+				cab=cab+m.getName()+", ";	
+				
 				//if( (m.getName().contains("Micro")) || (m.getName().contains("Micro")))
-				if(m.getClass().getName().contains("Macro"))
+				if((obtainResultsByLabel) && (m.getClass().getName().contains("Macro")))
 				{
 					for(int l=0; l<dataset.getNumLabels(); l++)
 					{
 						file.write("\n\t" + m.getName() + " " + dataset.getLabelNames()[l] + ": " +  + ((MacroAverageMeasure) m).getValue(l));
+
+						cab=cab+m.getName()+"-"+dataset.getLabelNames()[l]+", ";	
 					}
 				}
 				
-				cab=cab+m.getName()+", ";				
+//				cab=cab+m.getName()+", ";				
 		    }
-			cab=cab+"number of evaluations, evaluation time, execution time\n";
+			cab=cab+"number of evaluations,";// evaluation time, execution time\n";
+			cab=cab+" execution time\n";
 			file.write(System.getProperty("line.separator"));
 			
 			// Global report
@@ -462,7 +522,7 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
 		    { 	
 				bw.write(m.getValue() + ",");
 				
-				if(m.getClass().getName().contains("Macro"))
+				if((obtainResultsByLabel) && (m.getClass().getName().contains("Macro")))
 				{
 					for(int l=0; l<dataset.getNumLabels(); l++)
 					{
@@ -513,10 +573,12 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
                 measures.add(new MicroRecall(numOfLabels));
                 measures.add(new MicroFMeasure(numOfLabels));
                 measures.add(new MicroSpecificity(numOfLabels));
+                measures.add(new MicroAccuracy(numOfLabels));
                 measures.add(new MacroPrecision(numOfLabels));
                 measures.add(new MacroRecall(numOfLabels));
                 measures.add(new MacroFMeasure(numOfLabels));
                 measures.add(new MacroSpecificity(numOfLabels));
+                measures.add(new MacroAccuracy(numOfLabels));
             }
             // add ranking-based measures if applicable
             if (prediction.hasRanking()) {
@@ -534,8 +596,8 @@ public class EnsembleListener implements IAlgorithmListener, IConfigure
                 measures.add(new GeometricMeanAveragePrecision(numOfLabels));
                 measures.add(new MeanAverageInterpolatedPrecision(numOfLabels, 10));
                 measures.add(new GeometricMeanAverageInterpolatedPrecision(numOfLabels, 10));
-                measures.add(new MicroAUC(numOfLabels));
-                measures.add(new MacroAUC(numOfLabels));
+//                measures.add(new MicroAUC(numOfLabels));
+//                measures.add(new MacroAUC(numOfLabels));
                 measures.add(new LogLoss());
             }
             // add hierarchical measures if applicable

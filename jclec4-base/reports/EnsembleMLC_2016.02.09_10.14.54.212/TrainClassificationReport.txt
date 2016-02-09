@@ -1,0 +1,52 @@
+Relation: emotions_train_1
+Number of attributes: 72
+Number of labels: 6
+Run Time (s): 1.328
+
+Hamming Loss: 0,0134
+Subset Accuracy: 0,9400
+Example-Based Precision: 0,9790
+Example-Based Recall: 0,9781
+Example-Based F Measure: 0,9758
+Example-Based Accuracy: 0,9678
+Example-Based Specificity: 0,9907
+Micro-averaged Precision: 0,9799
+Micro-averaged Recall: 0,9769
+Micro-averaged F-Measure: 0,9784
+Micro-averaged Specificity: 0,9909
+Micro-averaged Accuracy: 0,9866
+Macro-averaged Precision: 0,9806
+Macro-averaged Recall: 0,9767
+Macro-averaged F-Measure: 0,9787
+Macro-averaged Specificity: 0,9904
+Macro-averaged Accuracy: 0,9866
+Average Precision: 0,9944
+Coverage: 0,9062
+OneError: 0,0038
+IsError: 0,0244
+ErrorSetSize: 0,0432
+Ranking Loss: 0,0052
+Mean Average Precision: 0,9953
+Geometric Mean Average Precision: 0,9953
+Mean Average Interpolated Precision: 0,9697
+Geometric Mean Average Interpolated Precision: 0,9694
+Logarithmic Loss: 0,4451
+
+Ensemble of classifiers
+
+numLabels: 6
+numClassifiers:12
+maxSubsetSize:3
+EnsembleMatrix:
+0 1 1 0 1 0 
+1 0 1 0 1 0 
+0 0 1 1 0 1 
+1 1 1 0 0 0 
+0 0 0 1 1 1 
+0 0 1 1 1 0 
+0 1 0 1 1 0 
+0 1 0 1 0 1 
+1 0 0 1 1 0 
+1 1 0 0 0 1 
+0 1 0 0 1 1 
+1 0 0 0 1 1 
