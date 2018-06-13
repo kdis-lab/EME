@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring accessors="true" comment="Delete element from project &apos;jclec4-base&apos;&#x0A;- Original project: &apos;jclec4-base&apos;&#x0A;- Original element: &apos;net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutatorII.java&apos;" description="Delete element" element1="/src\/main\/java&lt;net.sf.jclec.problem.classification.multilabel.mut{PhiBasedIntraModelMutatorII.java" elements="1" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1421323989389" subPackages="false" version="1.0"/>
-</session>
