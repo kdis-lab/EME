@@ -1,4 +1,0 @@
-<filtered-recombinator>
-	<decorated type="net.sf.jclec.binarray.rec.OnePointCrossover"/>
-	<recombination-prob>0.75</recombination-prob>
-</filtered-recombinator>
