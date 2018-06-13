@@ -1,4 +1,4 @@
-package net.sf.jclec.problem.classification.multilabel;
+package eme;
 
 import java.util.ArrayList;
 import java.util.Comparator;

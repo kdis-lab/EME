@@ -1,4 +1,4 @@
-package net.sf.jclec.problem.classification.multilabel.rec;
+package eme.rec;
 
 import net.sf.jclec.IConfigure;
 

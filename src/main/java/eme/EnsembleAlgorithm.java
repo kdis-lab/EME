@@ -1,4 +1,4 @@
-package net.sf.jclec.problem.classification.multilabel;
+package eme;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -12,13 +12,14 @@ import weka.classifiers.trees.J48;
 import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
-import net.sf.jclec.problem.classification.multilabel.mut.IntraModelMutator;
-import net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator;
-import net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover;
 import net.sf.jclec.selector.BettersSelector;
 import net.sf.jclec.selector.WorsesSelector;
 
 import org.apache.commons.configuration.Configuration;
+
+import eme.mut.IntraModelMutator;
+import eme.mut.PhiBasedIntraModelMutator;
+import eme.rec.UniformModelCrossover;
 
 
 public class EnsembleAlgorithm extends SGE

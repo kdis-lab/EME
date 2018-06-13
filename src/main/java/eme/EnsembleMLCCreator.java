@@ -1,4 +1,4 @@
-package net.sf.jclec.problem.classification.multilabel;
+package eme;
 
 import net.sf.jclec.binarray.BinArrayCreator;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package net.sf.jclec.problem.classification.multilabel.mut;
+package eme.mut;
 
 
 import net.sf.jclec.binarray.BinArrayIndividual;

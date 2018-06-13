@@ -1,10 +1,10 @@
-package net.sf.jclec.problem.classification.multilabel.rec;
+package eme.rec;
 
 import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.binarray.BinArrayRecombinator;
 
 
-public class MultiModelCrossover extends BinArrayRecombinator
+public class ModelCrossover extends BinArrayRecombinator
 {
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------- Serialization constant
@@ -28,7 +28,7 @@ public class MultiModelCrossover extends BinArrayRecombinator
 	 * Empty constructor
 	 */
 	
-	public MultiModelCrossover() 
+	public ModelCrossover() 
 	{
 		super();
 	}
@@ -48,7 +48,7 @@ public class MultiModelCrossover extends BinArrayRecombinator
 	@Override
 	public boolean equals(Object other)
 	{
-		if (other instanceof MultiModelCrossover) {
+		if (other instanceof ModelCrossover) {
 			return true;
 		}
 		else {
@@ -77,29 +77,27 @@ public class MultiModelCrossover extends BinArrayRecombinator
 		// Creating sons genotypes
 		byte [] s0_genome = new byte[gl];
 		byte [] s1_genome = new byte[gl];
-		// Taking a number of models
-		int nModels;
-		nModels = randgen.choose(0, (gl/numberLabels)-1);
+		// Taking a crossover point
+		int cp1, cp2;
+		cp1 = randgen.choose(0, (gl/numberLabels));
+		cp2 = randgen.choose(0, (gl/numberLabels));
 		
-		// Taking a origin point
-		int pModel;
-		do{
-			pModel = randgen.choose(0, (gl/numberLabels)-1);
-		}while((pModel+nModels)>(gl/numberLabels)-1);
-		
+		// First son		
 		for(int i = 0; i < (gl/numberLabels); i++)
 		{
-			if(i == pModel)
-			{
-				System.arraycopy(p1_genome, pModel*numberLabels,   s0_genome, i*numberLabels,  nModels*numberLabels);
-				System.arraycopy(p0_genome, pModel*numberLabels,   s1_genome, i*numberLabels,  nModels*numberLabels);
-				i=i+nModels-1;
-			}
+			if(i == cp1)
+				System.arraycopy(p1_genome, cp1*numberLabels,   s0_genome, i*numberLabels,  numberLabels);
 			else
-			{
 				System.arraycopy(p0_genome, i*numberLabels,   s0_genome, i*numberLabels,  numberLabels);
+		}
+		
+		// Second son		
+		for(int i = 0; i < (gl/numberLabels); i++)
+		{
+			if(i == cp2)
+				System.arraycopy(p0_genome, cp2*numberLabels,   s1_genome, i*numberLabels,  numberLabels);
+			else
 				System.arraycopy(p1_genome, i*numberLabels,   s1_genome, i*numberLabels,  numberLabels);
-			}
 		}
 		
 		// Put sons in buffer
