@@ -1,0 +1,131 @@
+package net.sf.jclec.problem.classification.multilabel;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import weka.core.Instance;
+import weka.core.Instances;
+import mulan.classifier.MultiLabelLearner;
+import mulan.classifier.MultiLabelOutput;
+import mulan.data.MultiLabelInstances;
+import mulan.evaluation.Evaluation;
+import mulan.evaluation.Evaluator;
+import mulan.evaluation.GroundTruth;
+import mulan.evaluation.measure.Measure;
+
+public class EntropyEvaluator extends Evaluator {
+	
+	public Evaluation evaluate(EnsembleClassifier learner, MultiLabelInstances mlTestData,
+            List<Measure> measures) throws Exception {
+        checkLearner(learner);
+        checkData(mlTestData);
+        checkMeasures(measures);
+
+        // reset measures
+        for (Measure m : measures) {
+            m.reset();
+        }
+
+        int numLabels = mlTestData.getNumLabels();
+        int[] labelIndices = mlTestData.getLabelIndices();
+        GroundTruth truth;
+        Set<Measure> failed = new HashSet<Measure>();
+        Instances testData = mlTestData.getDataSet();
+        int numInstances = testData.numInstances();
+        
+        //Reset the entropy values
+        learner.resetEntropy();
+        
+        for (int instanceIndex = 0; instanceIndex < numInstances; instanceIndex++) {
+            Instance instance = testData.instance(instanceIndex);
+            boolean hasMissingLabels = mlTestData.hasMissingLabels(instance);
+            Instance labelsMissing = (Instance) instance.copy();
+            labelsMissing.setDataset(instance.dataset());
+            for (int i = 0; i < mlTestData.getNumLabels(); i++) {
+                labelsMissing.setMissing(labelIndices[i]);
+            }
+            MultiLabelOutput output = learner.makePrediction(labelsMissing);
+            if (output.hasPvalues()) {// check if we have regression outputs
+                truth = new GroundTruth(getTrueScores(instance, numLabels, labelIndices));
+            } else {
+                truth = new GroundTruth(getTrueLabels(instance, numLabels, labelIndices));
+            }
+            Iterator<Measure> it = measures.iterator();
+            while (it.hasNext()) {
+                Measure m = it.next();
+                if (!failed.contains(m)) {
+                    try {
+                        if (hasMissingLabels && !m.handlesMissingValues()) {
+                            continue;
+                        }
+                        m.update(output, truth);
+                    } catch (Exception ex) {
+                        failed.add(m);
+                    }
+                }
+            }
+        }
+
+        double entropy = 0;
+        for(int i=0; i<mlTestData.getNumLabels(); i++)
+        {
+        	entropy += learner.getEntropyPerLabel()[i]/mlTestData.getNumInstances();
+        }
+        entropy = entropy / mlTestData.getNumLabels();
+        learner.setEntropy(entropy);
+        
+
+        return new Evaluation(measures, mlTestData);
+    }
+	
+	
+	 private void checkLearner(MultiLabelLearner learner) {
+	        if (learner == null) {
+	            throw new IllegalArgumentException("Learner to be evaluated is null.");
+	        }
+	    }
+
+	    private void checkData(MultiLabelInstances data) {
+	        if (data == null) {
+	            throw new IllegalArgumentException("Evaluation data object is null.");
+	        }
+	    }
+
+	    private void checkMeasures(List<Measure> measures) {
+	        if (measures == null) {
+	            throw new IllegalArgumentException("List of evaluation measures to compute is null.");
+	        }
+	    }
+
+	    private boolean[] getTrueLabels(Instance instance, int numLabels, int[] labelIndices) {
+
+	        boolean[] trueLabels = new boolean[numLabels];
+	        for (int counter = 0; counter < numLabels; counter++) {
+	            int classIdx = labelIndices[counter];
+	            String classValue = instance.attribute(classIdx).value((int) instance.value(classIdx));
+	            trueLabels[counter] = classValue.equals("1");
+	        }
+
+	        return trueLabels;
+	    }
+
+	    private double[] getTrueScores(Instance instance, int numLabels, int[] labelIndices) {
+
+	        double[] trueScores = new double[numLabels];
+	        for (int counter = 0; counter < numLabels; counter++) {
+	            int classIdx = labelIndices[counter];
+	            double score;
+	            if (instance.isMissing(classIdx)) {// if target is missing
+	                score = Double.NaN; // make it equal to Double.Nan
+	            } else {
+	                score = instance.value(classIdx);
+	            }
+	            trueScores[counter] = score;
+	        }
+
+	        return trueScores;
+	    }
+
+}

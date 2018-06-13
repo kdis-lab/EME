@@ -1,0 +1,52 @@
+Relation: emotions_test_1
+Number of attributes: 72
+Number of labels: 6
+Run Time (s): 0.95
+
+Hamming Loss: 0,2361
+Subset Accuracy: 0,2167
+Example-Based Precision: 0,5750
+Example-Based Recall: 0,6444
+Example-Based F Measure: 0,5728
+Example-Based Accuracy: 0,4875
+Example-Based Specificity: 0,8269
+Micro-averaged Precision: 0,6154
+Micro-averaged Recall: 0,6429
+Micro-averaged F-Measure: 0,6288
+Micro-averaged Specificity: 0,8185
+Micro-averaged Accuracy: 0,7639
+Macro-averaged Precision: 0,6508
+Macro-averaged Recall: 0,6230
+Macro-averaged F-Measure: 0,6273
+Macro-averaged Specificity: 0,8175
+Macro-averaged Accuracy: 0,7639
+Average Precision: 0,7677
+Coverage: 1,9500
+OneError: 0,3167
+IsError: 0,5667
+ErrorSetSize: 1,3167
+Ranking Loss: 0,1877
+Mean Average Precision: 0,6958
+Geometric Mean Average Precision: 0,6817
+Mean Average Interpolated Precision: 0,7098
+Geometric Mean Average Interpolated Precision: 0,6971
+Logarithmic Loss: 6,2558
+
+Ensemble of classifiers
+
+numLabels: 6
+numClassifiers:12
+maxSubsetSize:3
+EnsembleMatrix:
+1 0 1 0 0 1 
+1 0 1 0 1 0 
+0 0 1 1 0 1 
+1 1 1 0 0 0 
+0 0 0 1 1 1 
+0 0 1 0 1 1 
+0 1 0 1 1 0 
+0 1 0 1 0 1 
+1 0 0 1 1 0 
+1 1 0 0 0 1 
+0 1 0 0 1 1 
+0 1 0 1 1 0 

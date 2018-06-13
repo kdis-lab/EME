@@ -1,0 +1,33 @@
+<experiment>
+	 <process algorithm-type="net.sf.jclec.problem.classification.multilabel.EnsembleAlgorithm">
+		 <rand-gen-factory type="net.sf.jclec.util.random.RanecuFactory" seed="20"/>
+		 <population-size>20</population-size>
+		 <max-of-generations>10</max-of-generations>
+		 <species type="net.sf.jclec.binarray.BinArrayIndividualSpecies" genotype-length="1"/>
+		 <evaluator type="net.sf.jclec.problem.classification.multilabel.EnsembleMLCEvaluator"/>
+		 <provider type="net.sf.jclec.problem.classification.multilabel.EnsembleMLCCreator"/>
+		 <parents-selector type="net.sf.jclec.selector.TournamentSelector">
+			 <tournament-size>2</tournament-size>
+		 </parents-selector>
+		 <recombinator type="net.sf.jclec.problem.classification.multilabel.rec.UniformModelCrossover" rec-prob="0.8" />
+		 <mutator type="net.sf.jclec.problem.classification.multilabel.mut.PhiBasedIntraModelMutator" mut-prob="0.2" />
+		 <number-classifiers>28</number-classifiers>
+		 <number-labels-classifier>3</number-labels-classifier>
+		 <prediction-threshold>0.5</prediction-threshold>
+		 <variable>false</variable>
+		 <validation-set>false</validation-set>
+		 <phi-in-fitness>false</phi-in-fitness>
+		 <use-coverage>false</use-coverage>
+		 <dataset>
+			<train-dataset>data/yeast/yeast_train_1.arff</train-dataset>
+			<test-dataset>data/yeast/yeast_test_1.arff</test-dataset>
+			<xml>data/yeast/yeast.xml</xml>
+		 </dataset>
+		<listener type="net.sf.jclec.problem.classification.multilabel.EnsembleListener">
+			<report-dir-name>reports/EnsembleMLC</report-dir-name>
+			<global-report-name>summaryEnsembleMLC</global-report-name>
+			<report-frequency>1</report-frequency>	
+			<results-by-label>false</results-by-label>
+		</listener>
+	 </process>
+</experiment>

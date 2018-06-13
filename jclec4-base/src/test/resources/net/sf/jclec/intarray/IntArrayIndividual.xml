@@ -1,0 +1,4 @@
+<int-array-individual xmlns:j="http://javolution.org" j:class="net.sf.jclec.intarray.IntArrayIndividual">
+<fitness j:class="net.sf.jclec.fitness.SimpleValueFitness" value="2.3E-1"/>
+<genotype value="1 3 4 5 3 6 7"/>
+</int-array-individual>
