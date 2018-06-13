@@ -1,0 +1,82 @@
+Relation: emotions_train_1
+Number of attributes: 72
+Number of labels: 6
+Run Time (s): 4.927
+
+Hamming Loss: 0,0018
+Subset Accuracy: 0,9895
+Example-Based Precision: 0,9993
+Example-Based Recall: 0,9961
+Example-Based F Measure: 0,9971
+Example-Based Accuracy: 0,9954
+Example-Based Specificity: 0,9995
+Micro-averaged Precision: 0,9989
+Micro-averaged Recall: 0,9955
+Micro-averaged F-Measure: 0,9972
+Micro-averaged Specificity: 0,9995
+Macro-averaged Precision: 0,9992
+	Macro-averaged Precision amazed-suprised: 1.0
+	Macro-averaged Precision happy-pleased: 1.0
+	Macro-averaged Precision relaxing-calm: 0.9953271028037384
+	Macro-averaged Precision quiet-still: 1.0
+	Macro-averaged Precision sad-lonely: 1.0
+	Macro-averaged Precision angry-aggresive: 1.0
+Macro-averaged Recall: 0,9951
+	Macro-averaged Recall amazed-suprised: 0.9927007299270073
+	Macro-averaged Recall happy-pleased: 1.0
+	Macro-averaged Recall relaxing-calm: 1.0
+	Macro-averaged Recall quiet-still: 0.9915966386554622
+	Macro-averaged Recall sad-lonely: 0.9924812030075187
+	Macro-averaged Recall angry-aggresive: 0.9935483870967742
+Macro-averaged F-Measure: 0,9971
+	Macro-averaged F-Measure amazed-suprised: 0.9963369963369964
+	Macro-averaged F-Measure happy-pleased: 1.0
+	Macro-averaged F-Measure relaxing-calm: 0.9976580796252927
+	Macro-averaged F-Measure quiet-still: 0.9957805907172996
+	Macro-averaged F-Measure sad-lonely: 0.9962264150943396
+	Macro-averaged F-Measure angry-aggresive: 0.9967637540453075
+Macro-averaged Specificity: 0,9994
+	Macro-averaged Specificity amazed-suprised: 1.0
+	Macro-averaged Specificity happy-pleased: 1.0
+	Macro-averaged Specificity relaxing-calm: 0.9961832061068703
+	Macro-averaged Specificity quiet-still: 1.0
+	Macro-averaged Specificity sad-lonely: 1.0
+	Macro-averaged Specificity angry-aggresive: 1.0
+Average Precision: 0,9986
+Coverage: 0,8779
+OneError: 0,0000
+IsError: 0,0063
+ErrorSetSize: 0,0105
+Ranking Loss: 0,0013
+Mean Average Precision: 0,9995
+Geometric Mean Average Precision: 0,9995
+Mean Average Interpolated Precision: 0,9944
+Geometric Mean Average Interpolated Precision: 0,9943
+Micro-averaged AUC: 0,9998
+Macro-averaged AUC: 0,9998
+	Macro-averaged AUC amazed-suprised: 0.999384529002721
+	Macro-averaged AUC happy-pleased: 1.0
+	Macro-averaged AUC relaxing-calm: 0.9999014442891445
+	Macro-averaged AUC quiet-still: 1.0
+	Macro-averaged AUC sad-lonely: 0.9998790836740975
+	Macro-averaged AUC angry-aggresive: 0.9997076612903226
+Logarithmic Loss: 0,2206
+
+Ensemble of classifiers
+
+numLabels: 6
+numClassifiers:12
+maxSubsetSize:3
+EnsembleMatrix:
+1 1 0 0 1 0 
+0 0 1 0 1 1 
+1 1 0 0 0 1 
+0 1 1 1 0 0 
+0 0 1 1 1 0 
+1 0 1 1 0 0 
+1 0 0 1 0 1 
+0 1 1 0 1 0 
+0 0 1 0 1 1 
+1 1 0 1 0 0 
+1 0 0 1 0 1 
+0 1 0 0 1 1 

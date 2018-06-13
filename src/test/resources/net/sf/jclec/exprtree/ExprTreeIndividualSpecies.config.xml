@@ -1,0 +1,17 @@
+<species>
+	<expression-tree>
+		<min-tree-size>1</min-tree-size>
+		<max-tree-size>10</max-tree-size>
+		<root-type>java.lang.Double</root-type>
+		<terminals>
+			<terminal class="net.sf.jclec.exprtree.fun.X"/>
+			<terminal class="net.sf.jclec.exprtree.fun.Y"/>
+			<terminal class="net.sf.jclec.exprtree.fun.Z"/>
+		</terminals>
+		<functions>
+			<function class="net.sf.jclec.exprtree.fun.Add"/>		
+			<function class="net.sf.jclec.exprtree.fun.Sub"/>
+			<function class="net.sf.jclec.exprtree.fun.Mul"/>		
+		</functions>
+	</expression-tree>
+</species>

@@ -1,0 +1,4 @@
+<repeat-recombinator>
+	<decorated type="net.sf.jclec.binarray.rec.OnePointCrossover"/>
+	<number-of-repetitions>2</number-of-repetitions>
+</repeat-recombinator>

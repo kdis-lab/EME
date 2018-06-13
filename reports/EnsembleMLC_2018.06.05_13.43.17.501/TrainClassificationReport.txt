@@ -1,0 +1,68 @@
+Relation: yeast_train_1
+Number of attributes: 103
+Number of labels: 14
+Run Time (s): 291.119
+
+Hamming Loss: 0,0020
+Subset Accuracy: 0,9757
+Example-Based Precision: 0,9985
+Example-Based Recall: 0,9948
+Example-Based F Measure: 0,9961
+Example-Based Accuracy: 0,9934
+Example-Based Specificity: 0,9994
+Micro-averaged Precision: 0,9987
+Micro-averaged Recall: 0,9946
+Micro-averaged F-Measure: 0,9966
+Micro-averaged Specificity: 0,9994
+Macro-averaged Precision: 0,9991
+Macro-averaged Recall: 0,9696
+Macro-averaged F-Measure: 0,9826
+Macro-averaged Specificity: 0,9988
+Average Precision: 0,9994
+Coverage: 3,2487
+OneError: 0,0000
+IsError: 0,0072
+ErrorSetSize: 0,0119
+Ranking Loss: 0,0003
+Mean Average Precision: 0,9979
+Geometric Mean Average Precision: 0,9979
+Mean Average Interpolated Precision: 0,9927
+Geometric Mean Average Interpolated Precision: 0,9927
+Micro-averaged AUC: 0,9999
+Macro-averaged AUC: 0,9998
+Logarithmic Loss: 0,5767
+
+Ensemble of classifiers
+
+numLabels: 14
+numClassifiers:28
+maxSubsetSize:3
+EnsembleMatrix:
+0 0 0 1 0 0 0 0 0 1 0 1 0 0 
+0 0 0 0 0 0 1 0 1 0 0 0 0 1 
+0 1 0 1 0 0 0 0 0 0 0 0 1 0 
+0 0 0 0 1 1 1 0 0 0 0 0 0 0 
+0 0 0 1 0 0 0 1 0 1 0 0 0 0 
+0 1 1 0 0 0 0 0 1 0 0 0 0 0 
+0 0 0 0 1 0 0 0 0 0 0 0 1 1 
+0 0 1 0 0 0 0 1 0 0 1 0 0 0 
+0 0 0 0 1 0 0 0 0 1 0 1 0 0 
+0 0 0 0 0 0 0 0 0 1 1 0 1 0 
+0 0 0 1 0 1 0 0 1 0 0 0 0 0 
+0 0 0 0 1 0 0 0 0 0 0 1 0 1 
+0 0 0 0 0 0 0 1 0 0 1 0 0 1 
+1 0 0 0 0 0 1 0 0 0 0 0 1 0 
+0 0 1 0 1 0 0 1 0 0 0 0 0 0 
+0 1 0 0 0 1 0 0 0 1 0 0 0 0 
+1 0 0 0 0 0 0 0 1 0 0 0 1 0 
+1 0 0 1 0 0 0 0 0 0 0 0 0 1 
+0 0 1 0 0 0 0 0 1 0 1 0 0 0 
+0 1 0 1 0 0 0 1 0 0 0 0 0 0 
+0 0 0 0 1 0 1 0 0 0 1 0 0 0 
+0 0 0 0 0 1 1 0 0 0 0 1 0 0 
+0 0 1 0 1 0 0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 1 1 0 0 1 0 0 0 
+0 1 0 0 0 1 0 0 0 0 0 0 0 1 
+1 0 0 0 0 1 1 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 1 0 1 0 1 
+1 1 0 0 0 0 0 0 0 0 0 1 0 0 

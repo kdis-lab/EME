@@ -1,0 +1,82 @@
+Relation: emotions_test_1
+Number of attributes: 72
+Number of labels: 6
+Run Time (s): 5.409
+
+Hamming Loss: 0,2119
+Subset Accuracy: 0,2712
+Example-Based Precision: 0,6582
+Example-Based Recall: 0,6441
+Example-Based F Measure: 0,6232
+Example-Based Accuracy: 0,5345
+Example-Based Specificity: 0,8547
+Micro-averaged Precision: 0,6621
+Micro-averaged Recall: 0,6561
+Micro-averaged F-Measure: 0,6591
+Micro-averaged Specificity: 0,8480
+Macro-averaged Precision: 0,6737
+	Macro-averaged Precision amazed-suprised: 0.6896551724137931
+	Macro-averaged Precision happy-pleased: 0.6060606060606061
+	Macro-averaged Precision relaxing-calm: 0.6666666666666666
+	Macro-averaged Precision quiet-still: 0.84
+	Macro-averaged Precision sad-lonely: 0.6785714285714286
+	Macro-averaged Precision angry-aggresive: 0.5609756097560976
+Macro-averaged Recall: 0,6464
+	Macro-averaged Recall amazed-suprised: 0.5555555555555556
+	Macro-averaged Recall happy-pleased: 0.5555555555555556
+	Macro-averaged Recall relaxing-calm: 0.8235294117647058
+	Macro-averaged Recall quiet-still: 0.7241379310344828
+	Macro-averaged Recall sad-lonely: 0.5428571428571428
+	Macro-averaged Recall angry-aggresive: 0.6764705882352942
+Macro-averaged F-Measure: 0,6544
+	Macro-averaged F-Measure amazed-suprised: 0.6153846153846154
+	Macro-averaged F-Measure happy-pleased: 0.5797101449275363
+	Macro-averaged F-Measure relaxing-calm: 0.7368421052631579
+	Macro-averaged F-Measure quiet-still: 0.7777777777777778
+	Macro-averaged F-Measure sad-lonely: 0.6031746031746031
+	Macro-averaged F-Measure angry-aggresive: 0.6133333333333333
+Macro-averaged Specificity: 0,8418
+	Macro-averaged Specificity amazed-suprised: 0.8902439024390244
+	Macro-averaged Specificity happy-pleased: 0.8414634146341463
+	Macro-averaged Specificity relaxing-calm: 0.6865671641791045
+	Macro-averaged Specificity quiet-still: 0.9550561797752809
+	Macro-averaged Specificity sad-lonely: 0.891566265060241
+	Macro-averaged Specificity angry-aggresive: 0.7857142857142857
+Average Precision: 0,7519
+Coverage: 2,0763
+OneError: 0,3559
+IsError: 0,5254
+ErrorSetSize: 1,5000
+Ranking Loss: 0,2203
+Mean Average Precision: 0,6556
+Geometric Mean Average Precision: 0,6464
+Mean Average Interpolated Precision: 0,6713
+Geometric Mean Average Interpolated Precision: 0,6646
+Micro-averaged AUC: 0,8081
+Macro-averaged AUC: 0,7953
+	Macro-averaged AUC amazed-suprised: 0.790819783197832
+	Macro-averaged AUC happy-pleased: 0.7110433604336044
+	Macro-averaged AUC relaxing-calm: 0.8320163886450103
+	Macro-averaged AUC quiet-still: 0.8953893839597056
+	Macro-averaged AUC sad-lonely: 0.7626506024096386
+	Macro-averaged AUC angry-aggresive: 0.7801120448179272
+Logarithmic Loss: 8,7674
+
+Ensemble of classifiers
+
+numLabels: 6
+numClassifiers:12
+maxSubsetSize:3
+EnsembleMatrix:
+1 0 1 0 0 1 
+0 1 0 1 1 0 
+1 1 1 0 0 0 
+0 0 1 1 0 1 
+0 0 1 0 1 1 
+1 1 1 0 0 0 
+1 0 1 0 1 0 
+1 0 0 1 0 1 
+1 0 0 1 0 1 
+0 1 0 0 1 1 
+0 1 0 1 1 0 
+0 1 0 1 1 0 
