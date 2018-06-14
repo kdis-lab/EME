@@ -1,8 +1,12 @@
 package eme.mut;
 
-
 import net.sf.jclec.binarray.BinArrayIndividual;
 
+/**
+ * @author Jose M. Moyano <jmoyano@uco.es>
+ *
+ * Class implementing the phi-based mutator
+ */
 public class PhiBasedIntraModelMutator extends IntraModelMutator
 {
 	/////////////////////////////////////////////////////////////////
@@ -10,12 +14,13 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 	/////////////////////////////////////////////////////////////////
 	
 	/**
-	 * 
+	 * Serialization constant
 	 */
 	private static final long serialVersionUID = 8453875747867690100L;
 	
 	
-	/* Matrix with Phi correlations between labels */
+	/**
+	 *  Matrix with Phi correlations between labels */
 	double [][] phiMatrix;
 	
 	/////////////////////////////////////////////////////////////////
@@ -24,14 +29,16 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 	
 	/**
 	 * Empty constructor
-	 */
-	
+	 */	
 	public PhiBasedIntraModelMutator() 
 	{
 		super();
 	}
 
-	
+	/**
+	 * Set the matrix with phi values between pairs of labels
+	 * @param matrix Matrix with phi values
+	 */
 	public void setPhiMatrix(double [][] matrix)
 	{
 		phiMatrix = matrix;
@@ -97,7 +104,6 @@ public class PhiBasedIntraModelMutator extends IntraModelMutator
 					mut[j] = 0;				
 			}	
 
-			
 			//Accumulate values
 			acc [0] = mut[i*numberLabels];
 			for(int j=1; j<numberLabels; j++)
