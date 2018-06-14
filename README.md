@@ -1,15 +1,15 @@
 # EME: Evolutionary Multi-label Ensemble
 
-EME is an evolutionary approach for the automatic generation of ensembles of diverse and competitive multi-label classifiers. It takes into account characteristics of the multi-label data such as the relationships among the labels, imbalance of the data, and the complexity of the output space. The ensemble is based on projections of the label space, considering in this way the relationships among the labels but also reducing the computational cost in cases where the output space is complex. Further, EME takes into account all the labels approximately the same number of times in the ensemble, regardless of their frequency or its ease to be predicted; so that the imbalance of the data is considered and the infrequent labels are not ignored. For that, the fitness function takes into account both the predictive performance of the model and the number of times that each label is considered in the ensemble. Finally, the diversity of the ensemble is not taken into account explicitly, but the ensembles evolve selecting their classifiers based on their overall performance.
+EME is an evolutionary approach for the automatic generation of ensembles of diverse and competitive multi-label classifiers. It takes into account characteristics of the multi-label data such as the relationships among the labels, imbalance of the data, and the complexity of the output space. The ensemble is based on small projections of the label space, considering in this way the relationships among the labels but also reducing the computational cost in cases where the output space is complex. Further, EME takes into account all the labels approximately the same number of times in the ensemble, regardless of their frequency or its ease to be predicted; so that the imbalance of the data is considered and the infrequent labels are not ignored. For that, the fitness function takes into account both the predictive performance of the model and the number of times that each label is considered in the ensemble.
 
 More information about this algorithm can be find in the following article:
 > Jose M. Moyano, Eva L. Gibaja, Krzysztof J. Cios, Sebastián Ventura. "An Evolutionary Approach to Build Ensembles of Multi-Label Classifiers". Submitted to Information Fusion. (2018).
 
-If you use EME, please cite the paper. Further, a bibtex cite [] is provided at the end of the description.
+If you use EME, please cite the paper. Further, a [bibtex citation file](https://github.com/i02momuj/EvolutionaryMultiLabelEnsemble/blob/master/citation.bib) is also provided.
 
 In this repository we provide the code of EME, distributed under the GPLv3 License. EME has been implemented using JCLEC [[Ven08]](#Ven08), Mulan [[Tso11]](#Tso11), and Weka [[Hal09]](#Hal09)  libraries. Besides, the last release (v 1.2) [] provides the executable jar to execute EME and also the javadoc.
 
-To execute EME, only have to execute the following command:
+To execute EME, the following command have to be executed:
 ```sh
 java -jar EME.jar configFile.cfg
 ```
@@ -51,8 +51,8 @@ The configuration file is a xml file including the parameters of the evolutionar
 </experiment>
 ```
 
-* The configuration file must start with the ```<experiment>``` tag and then the ```<process>``` tag, which indicates the class with the evolutionary algorithm, in our case ```eme.EnsembleAlgorithm```.
-* The ```<rand-gen-factory>``` must determine the seed for random numbers with the ```seed``` attribute. Further, it may indicate the type of the rand-gen-factory, which by default is ```net.sf.jclec.util.random.RanecuFactory```. If several seeds are going to be used, the tag ```<rand-gen-factory multi="true">``` is used, including inside the different seeds, as follows:
+* The configuration file must start with the ```<experiment>``` tag and then the ```<process>``` tag, the last indicating the class with the evolutionary algorithm, in our case ```eme.EnsembleAlgorithm```.
+* The ```<rand-gen-factory>``` must determine the seed for random numbers with the ```seed``` attribute. Further, it may indicate the type of the rand-gen-factory, which by default is ```net.sf.jclec.util.random.RanecuFactory```. If several seeds are going to be used, the tag ```<rand-gen-factory multi="true">``` may be used, including inside the different seeds, as follows:
   ```xml
     <rand-gen-factory multi="true">
 	  <rand-gen-factory seed="10"/>
@@ -61,16 +61,16 @@ The configuration file is a xml file including the parameters of the evolutionar
 	    ...
     </rand-gen-factory>
   ```
-* The parents selector is determined with the tag ```<parents-selector>```. If for example the tournament selector is selected, its size is determined with the sub-tag ```<tournament-size>```.
+* The parents selector is determined with the ```<parents-selector>``` tag. If, for example, the tournament selector is selected, its size is determined with the sub-tag ```<tournament-size>```.
 * The size of the population is determined with the ```<population-size>``` tag.
 * The number of generations of the evolutionary algorithm is determined with the ```<max-of-generations>``` tag.
 * The ```<recombinator>``` tag determines the type of recombinator or crossover operator. In EME, three crossover operators are implemented: ```ModelCrossover```, ```MultiModelCrossover```, and ```UniformModelCrossover```. Further, the probability to apply this operator to each individual is determined with the ```rec-prob``` attribute.
-* The ```<mutator>``` tag determines the type of mutation operator. In EME, two crossover operators are implemented: the basic ```IntraModelMutator```, and ```PhiBasedIntraModelMutator```.. Further, the probability to apply this operator to each individual is determined with the ```mut-prob``` attribute.
-* The number of classifiers in each ensemble is determined with the ```<number-classifiers>``` tag.
-* The number of labels of each classifier, or size of the *k*-labelset, is determined with the ```<number-labels-classifier>``` tag.
+* The ```<mutator>``` tag determines the type of mutation operator. In EME, two crossover operators are implemented: the basic ```IntraModelMutator```, and ```PhiBasedIntraModelMutator```. Further, the probability to apply this operator to each individual is determined with the ```mut-prob``` attribute.
+* The number of classifiers in each ensemble is determined by the ```<number-classifiers>``` tag.
+* The number of labels of each classifier, or size of the *k*-labelset, is determined by the ```<number-labels-classifier>``` tag.
 * The threshold used for the final prediction of the ensemble is determined with the ```<prediction-threshold>``` tag.
-* The tag ```<use-coverage>``` determines if the coverage ratio measure is included in the fitness of the individuals. The coverage ratio takes into account the number of times that each label appears in the ensemble.
-* With the ```<dataset>``` tag, the datasets used for training (for the evolutionary algorithm) and testing (for testint the final obtained ensemble by EME) are determined with the tags ```<train-dataset>``` and ```<test-dataset>``` respectively. The ```<xml>``` tag indicates the xml file of the dataset.  Several datasets, or several partitions of the same dataset may be used, including the tag ```<dataset multi="true">```, including inside the different datasets, as follows:
+* The ```<use-coverage>``` tag determines if the coverage ratio measure is included in the fitness of the individuals. The coverage ratio takes into account the number of times that each label appears in the ensemble.
+* With the ```<dataset>``` tag, the datasets used for training (for the evolutionary algorithm) and testing (for testing the final ensemble obtained by EME) are determined with the tags ```<train-dataset>``` and ```<test-dataset>``` respectively. The ```<xml>``` tag indicates the xml file of the dataset (Mulan format, [see more](http://www.uco.es/kdis/mllresources/)).  Several datasets, or several partitions of the same dataset may be used, including the tag ```<dataset multi="true">```, and the different datasets inside, as follows:
   ```xml
     <dataset multi="true">
       <dataset>
@@ -91,7 +91,7 @@ The configuration file is a xml file including the parameters of the evolutionar
         ...
     </dataset>
   ```
-* The ```<listener>``` tag determines the class used as listener; it is the responsible of creating the different reports during and at the end of the evolutionary process. The ```<report-dir-name>``` tag determines the directory where the reports of the different executions are stored. The ```<global-report-name>``` tag indicates the filename of the global report file. Finally, the ```<report-frequency>``` tag indicates the frequency with which the reports for the iterations are created.
+* The ```<listener>``` tag determines the class used as listener; it is the responsible of creating the different reports during and at the end of the evolutionary process. By default, the listener used is the one of the ```eme.EnsembleListener``` class. The ```<report-dir-name>``` tag determines the directory where the reports of the different executions are stored. The ```<global-report-name>``` tag indicates the filename of the global report file. Finally, the ```<report-frequency>``` tag indicates the frequency with which the reports for the iterations are created.
 
 Then, several more characteristics of the evolutionary algorithm could be modified in the configuration file, but they are optional and default values for them are given if they are not included in this file:
 * The ```<validation-set>``` tag  indicates if the training set is divided into training and validation, in order to evaluate the individuals with a different dataset to which was used to train them. By default, its value is ```false```.

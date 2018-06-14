@@ -287,6 +287,11 @@ public class EnsembleAlgorithm extends SGE
 		if(! configuration.containsKey("parents-selector.tournament-size")) {
 			configuration.addProperty("parents-selector.tournament-size", "2");
 		}
+		
+		//Listener type (only if not provided)
+		if(! configuration.containsKey("listener[@type]")) {
+			configuration.addProperty("listener[@type]", "eme.EnsembleListener");
+		}
 	}
 	
 	/**

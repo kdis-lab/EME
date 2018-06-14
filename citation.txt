@@ -1,0 +1,1 @@
+Jose M. Moyano, Eva L. Gibaja, Krzysztof J. Cios, Sebastián Ventura. "An Evolutionary Approach to Build Ensembles of Multi-Label Classifiers". Submitted to Information Fusion. (2018).

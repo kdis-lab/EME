@@ -1,8 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <experiment>
 	 <process algorithm-type="eme.EnsembleAlgorithm">
-		<rand-gen-factory multi="true">
-		  <rand-gen-factory seed="10"/>
-		</rand-gen-factory>
+		<rand-gen-factory seed="10"/>
 		 
 		<parents-selector type="net.sf.jclec.selector.TournamentSelector">
 			<tournament-size>2</tournament-size>
@@ -11,21 +10,19 @@
 		<population-size>50</population-size>
 		<max-of-generations>25</max-of-generations>		 
 		 
-		<recombinator type="eme.rec.UniformModelCrossover" rec-prob="0.8" />
-		<mutator type="eme.mut.PhiBasedIntraModelMutator" mut-prob="0.2" />
+		<recombinator rec-prob="0.8" type="eme.rec.UniformModelCrossover"/>
+		<mutator mut-prob="0.2" type="eme.mut.PhiBasedIntraModelMutator"/>
 		 
 		<number-classifiers>12</number-classifiers>
 		<number-labels-classifier>3</number-labels-classifier>
 		<prediction-threshold>0.5</prediction-threshold>
 		<use-coverage>true</use-coverage>
 		 
-		<dataset multi="true">
-		  <dataset>
+		<dataset>
 			  <train-dataset>data/emotions/emotions_train_1.arff</train-dataset>
 			  <test-dataset>data/emotions/emotions_test_1.arff</test-dataset>
 			  <xml>data/emotions/emotions.xml</xml>
 		  </dataset>
-		</dataset>
 		
 		<listener>
 			<report-dir-name>reports/EnsembleMLC</report-dir-name>
