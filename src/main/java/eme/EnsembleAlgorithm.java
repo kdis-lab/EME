@@ -22,7 +22,7 @@ import eme.mut.PhiBasedIntraModelMutator;
 import eme.rec.UniformModelCrossover;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing the evolutionary algorithm EME. It extends the SGE class from JCLEC.
  */

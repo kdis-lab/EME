@@ -3,7 +3,7 @@ package eme.mut;
 import net.sf.jclec.binarray.BinArrayIndividual;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing the phi-based mutator
  */

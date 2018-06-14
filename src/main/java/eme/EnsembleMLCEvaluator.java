@@ -22,7 +22,7 @@ import net.sf.jclec.fitness.ValueFitnessComparator;
 import net.sf.jclec.util.random.IRandGenFactory;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  * 
  * Class implementing the evaluator for individuals in EME
  */

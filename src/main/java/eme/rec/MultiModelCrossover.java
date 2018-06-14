@@ -4,7 +4,7 @@ import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.binarray.BinArrayRecombinator;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing a crossover operator who exchanges n models between parents given one point
  */

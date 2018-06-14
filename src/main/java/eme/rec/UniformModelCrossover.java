@@ -10,7 +10,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing a crossover operator who exchanges many models between parents with a probability for each of them
  */
@@ -86,27 +86,7 @@ public class UniformModelCrossover extends BinArrayRecombinator implements IConf
 	
 	// IConfigure interface
 
-	/**
-	 * Configuration method.
-	 * 
-	 * Configuration parameters for UniformCrossover are:
-	 * 
-	 * <ul>
-	 * <li>
-	 * <code>[@evaluate]: boolean (default = true)</code></p> 
-	 * If this parameter is set to <code>true</true> individuals will
-	 * be evaluated after its creation. 
-	 * </li>
-	 * <li>
-	 * <code>[@locus-crossover-prob]: double (default = 0.5)</code></p>
-	 * Locus crossover probability.  
-	 * </li>
-	 * <li>
-	 * <code>random-generator: complex</code></p>
-	 * Random generator used in individuals mutation.  
-	 * </li>
-	 * </ul>
-	 */
+	@Override
 	public void configure(Configuration configuration) 
 	{
 		// Get the 'locus-crossover-prob' property

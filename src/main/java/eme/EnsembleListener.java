@@ -61,7 +61,7 @@ import net.sf.jclec.fitness.SimpleValueFitness;
 import net.sf.jclec.binarray.BinArrayIndividual;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing a listener which makes reports for the algorithm.
  */

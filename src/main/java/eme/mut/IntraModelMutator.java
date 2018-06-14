@@ -4,7 +4,7 @@ import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.binarray.BinArrayMutator;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  *
  * Class implementing a basic mutator
  */

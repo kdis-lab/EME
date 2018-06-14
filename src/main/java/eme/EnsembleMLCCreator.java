@@ -4,7 +4,7 @@ import net.sf.jclec.binarray.BinArrayCreator;
 import java.util.HashSet;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  * 
  * Class implementing an individual generator for EME
  */
@@ -113,6 +113,8 @@ public class EnsembleMLCCreator extends BinArrayCreator
 	
 	/**
 	 * Create a int [] genotype
+	 * 
+	 * @return Genotype
 	 */
 	private final byte [] createGenotype()
 	{

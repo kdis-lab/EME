@@ -21,7 +21,7 @@ import mulan.classifier.transformation.LabelPowerset;
 import net.sf.jclec.util.random.IRandGen;
 
 /**
- * @author Jose M. Moyano <jmoyano@uco.es>
+ * @author Jose M. Moyano: jmoyano@uco.es
  * 
  * Class implementing the ensemble classifier which EME uses, i.e., an ensemble where each classifier uses only a subset of the labels.
  */
