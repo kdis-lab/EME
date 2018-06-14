@@ -247,6 +247,47 @@ public class EnsembleAlgorithm extends SGE
 		return tableFitness.size();
 	}
 
+	/**
+	 * Configure some default aspects and parameters of EME to make the configuration easier
+	 * 
+	 * @param configuration Configuration
+	 */
+	private void configureEmeDefaults(Configuration configuration) {
+		//Species
+		configuration.setProperty("species[@type]", "net.sf.jclec.binarray.BinArrayIndividualSpecies");
+		configuration.setProperty("species[@genotype-length]", "1");
+		
+		//Variable
+		configuration.addProperty("variable", "false");
+		
+		//Validation set (only if not provided)
+		if(! configuration.containsKey("validation-set")) {
+			configuration.addProperty("validation-set", "false");
+		}
+		
+		//Evaluator (only if not provided)
+		if(! configuration.containsKey("evaluator[@type]")) {
+			configuration.addProperty("evaluator[@type]", "eme.EnsembleMLCEvaluator");
+		}
+		
+		//Provider (only if not provided)
+		if(! configuration.containsKey("provider[@type]")) {
+			configuration.addProperty("provider[@type]", "eme.EnsembleMLCCreator");
+		}
+		
+		//Randgen type (only if not provided)
+		if(! configuration.containsKey("rand-gen-factory[@type]")) {
+			configuration.addProperty("rand-gen-factory[@type]", "net.sf.jclec.util.random.RanecuFactory");
+		}
+		
+		//Parents-selector (only if not provided)
+		if(! configuration.containsKey("parents-selector[@type]")) {
+			configuration.addProperty("parents-selector[@type]", "net.sf.jclec.selector.TournamentSelector");
+		}
+		if(! configuration.containsKey("parents-selector.tournament-size")) {
+			configuration.addProperty("parents-selector.tournament-size", "2");
+		}
+	}
 	
 	/**
 	 * {@inheritDoc}
@@ -254,6 +295,7 @@ public class EnsembleAlgorithm extends SGE
 	@Override
 	public void configure(Configuration configuration)
 	{
+		configureEmeDefaults(configuration);
 		super.configure(configuration);
 		
 		try {
@@ -338,6 +380,8 @@ public class EnsembleAlgorithm extends SGE
 				// Send Phi matrix to the mutator
 				((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
 			}
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
