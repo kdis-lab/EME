@@ -1,3 +1,14 @@
+/*
+ * This file is part of EME algorithm.
+ *
+ * (c)  Jose Maria Moyano Murillo <jmoyano@uco.es>
+ *      Eva Lucrecia Gibaja Galindo <egibaja@uco.es>
+ *      Sebastian Ventura Soto <sventura@uco.es>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 package eme.mut;
 
 import net.sf.jclec.binarray.BinArrayIndividual;
