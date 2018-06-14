@@ -10,9 +10,7 @@ import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.transformation.LabelPowerset;
 import mulan.evaluation.Evaluation;
 import mulan.evaluation.Evaluator;
-import mulan.evaluation.MultipleEvaluation;
 import mulan.evaluation.measure.ExampleBasedFMeasure;
-import mulan.evaluation.measure.HammingLoss;
 import mulan.evaluation.measure.Measure;
 import weka.classifiers.trees.J48;
 import net.sf.jclec.IFitness;
@@ -23,77 +21,95 @@ import net.sf.jclec.fitness.SimpleValueFitness;
 import net.sf.jclec.fitness.ValueFitnessComparator;
 import net.sf.jclec.util.random.IRandGenFactory;
 
-
+/**
+ * @author Jose M. Moyano <jmoyano@uco.es>
+ * 
+ * Class implementing the evaluator for individuals in EME
+ */
 public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 {
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------- Serialization constant
 	/////////////////////////////////////////////////////////////////
 
+	/**
+	 * Serialization constant
+	 */
 	protected static final long serialVersionUID = -2635335580011827514L;
 	
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------------------- Properties
 	/////////////////////////////////////////////////////////////////
 	
-	/* Dataset to build the ensemble */
+	/**
+	 *  Dataset to build the ensemble */
 	protected MultiLabelInstances datasetTrain;
 	
-	/* Dataset to evaluate the individuals */
+	/**
+	 *  Dataset to evaluate the individuals */
 	protected MultiLabelInstances datasetValidation;
 	
-	/* Max number of active labels in each base classifier */
+	/**
+	 *  Max number of active labels in each base classifier 
+	 *  
+	 *  Currently, only fixed has been proved
+	 */
 	protected int maxNumberLabelsClassifier;
 	
-	/* Number of base classifiers of the ensemble */
+	/**
+	 *  Number of base classifiers of the ensemble */
 	protected int numberClassifiers;
 	
-	/* Threshold for voting process prediction*/
+	/**
+	 * Threshold for voting process prediction */
 	protected double predictionThreshold;
 	
-	/* Indicates if the number of active labels is variable for each base classifier */
+	/** 
+	 * Indicates if the number of active labels is variable for each base classifier */
 	protected boolean variable;
 	
-	/* Indicates if the fitness is a value to maximize */
+	/**
+	 *  Indicates if the fitness is a value to maximize */
 	protected boolean maximize = true;
 	
-	/* Base learner for the classifiers of the ensemble */
+	/**
+	 *  Base learner for the classifiers of the ensemble */
 	public MultiLabelLearner baseLearner;
 	
-	/* Fitness values comparator */
+	/**
+	 *  Fitness values comparator */
 	protected Comparator<IFitness> COMPARATOR = new ValueFitnessComparator(!maximize);
 	
-	/* Table that stores all base classifiers built */
+	/**
+	 *  Table that stores all base classifiers built */
 	public Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
-	/* Table that stores the fitness of all evaluated individuals */
+	/**
+	 *  Table that stores the fitness of all evaluated individuals */
 	public Hashtable<String, Double> tableFitness;
-	
-	/* Matrix with phi correlations between labels */
-	double [][] phiMatrix;
-	
-	/* Indicates if the individual diversity is contemplated in fitness */
-	private boolean fitnessWithIndividualDiversity = false;
-	
-	/* Random numbers generator */
+
+	/**
+	 *  Random numbers generator */
 	protected IRandGenFactory randGenFactory;
 	
-	/* Indicates if the individual fitness contemplates the phi correlation between labels */
-	private boolean phiInFitness;
-	
-	/* Indicates if the coverage is used in fitness */
+	/**
+	 *  Indicates if the coverage ratio is used in fitness */
 	private boolean useCoverage;
 	
-	/* Indicate if the final individual is going to be evaluated */
+	/**
+	 *  Indicate if the final individual is going to be evaluated */
 	public boolean finalInd = false;
 	
-	/* Coverage of the final ensemble */
+	/**
+	 *  Coverage of the final ensemble */
 	public double finalCoverage;
 	
-	/* Multi-label measure of the final ensemble */
+	/**
+	 *  Multi-label measure of the final ensemble */
 	public double finalMeasure;
 	
-	/* Fitness of the final ensemble */
+	/**
+	 *  Fitness of the final ensemble */
 	public double finalFitness;
 	
 	/////////////////////////////////////////////////////////////////
@@ -112,91 +128,145 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	// ----------------------------------------------- Public methods
 	/////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Get the number of classifiers in the ensemble
+	 * 
+	 * @return Number of classifiers in the ensemble
+	 */
 	public int getNumberClassifiers()
 	{
 		return numberClassifiers;
 	}
 	
+	/**
+	 * Get training dataset
+	 * 
+	 * @return Multi-label training dataset
+	 */
 	public MultiLabelInstances getDatasetTrain()
 	{
 		return datasetTrain;
 	}
 	
+	/**
+	 * Get validation dataset
+	 * 
+	 * @return Multi-label validation dataset
+	 */
 	public MultiLabelInstances getDatasetValidation()
 	{
 		return datasetValidation;
 	}
 	
+	/**
+	 * Set training dataset
+	 * 
+	 * @param datasetTrain Multi-label training dataset
+	 */
 	public void setDatasetTrain(MultiLabelInstances datasetTrain) {
 		this.datasetTrain = datasetTrain;
 	}
 	
+	/**
+	 * Set validation dataset
+	 * 
+	 * @param datasetValidation Multi-label validation dataset
+	 */
 	public void setDatasetValidation(MultiLabelInstances datasetValidation) {
 		this.datasetValidation = datasetValidation;
 	}
 
+	/**
+	 * Set the number of classifiers in the ensemble
+	 * 
+	 * @param numberClassifiers Number of classifiers
+	 */
 	public void setNumberClassifiers(int numberClassifiers) {
 		this.numberClassifiers = numberClassifiers;
 	}
 
+	/**
+	 * Set the max number of labels in each base classifier (k)
+	 * At the moment, the number of labels for each classifier is fixed, but it could be variable
+	 * 
+	 * @param maxNumberLabelsClassifier Max number of labels for each classifier
+	 */
 	public void setMaxNumberLabelsClassifier(int maxNumberLabelsClassifier) {
 		this.maxNumberLabelsClassifier = maxNumberLabelsClassifier;
 	}
 	
+	/**
+	 * Set the threshold used for the prediction in the ensemble
+	 * 
+	 * @param predictionThreshold Prediction threshold
+	 */
 	public void setPredictionThreshold(double predictionThreshold) {
 		this.predictionThreshold = predictionThreshold;
 	}
 	
+	/**
+	 * Set variable value
+	 * 
+	 * @param variable FALSE if the number of labels for each base classifier is fixed, and TRUE if it wold be variable
+	 */
 	public void setVariable(boolean variable) {
 		this.variable = variable;
 	}
 	
+	/**
+	 * Set the multi-label base learner used. LP(J48) is proposed as default.
+	 * 
+	 * @param baseLearner Multi-label learner
+	 */
 	public void setBaseLearner(MultiLabelLearner baseLearner)
 	{
 		this.baseLearner = baseLearner;
 	}
 	
+	/**
+	 * Fitness comparator
+	 */
 	public Comparator<IFitness> getComparator() {
 		return COMPARATOR;
 	}
 	
-	public boolean getFitnessWithIndividualDiversity()
-	{
-		return fitnessWithIndividualDiversity;
-	}
-	
-	public void setFitnessWithIndividualDiversity(boolean b)
-	{
-		fitnessWithIndividualDiversity = b;
-	}
-	
+	/**
+	 * Set the table storing the classifiers built so far
+	 * 
+	 * @param tableClassifiers Table with built classifiers
+	 */
 	public void setTable(Hashtable<String, MultiLabelLearner> tableClassifiers) {
 		this.tableClassifiers = tableClassifiers;
 	}
 	
-	public void setTableMeasures(Hashtable<String, Double> tableFitness) {
+	/**
+	 * Set the table storing the fitness of the individuals
+	 * 
+	 * @param tableFitness Table storing the fitness values
+	 */
+	public void setTableFitness(Hashtable<String, Double> tableFitness) {
 		this.tableFitness = tableFitness;
 	}
 	
-	public void setPhiMatrix(double [][] matrix)
+	/**
+	 * Set the random numbers generator
+	 * 
+	 * @param randGenFactory Factory of random numbers generator
+	 */
+	public void setRandGenFactory(IRandGenFactory randGenFactory)
 	{
-		phiMatrix = matrix;
+		this.randGenFactory = randGenFactory;
 	}
-	
-	 public void setRandGenFactory(IRandGenFactory randGenFactory)
-	 {
-		 this.randGenFactory = randGenFactory;
-	 }
-	 
-	 public void setPhiInFitness(boolean phiInFitness)
-	 {
-		 this.phiInFitness = phiInFitness;
-	 }
 
-	 public void setUseCoverage(boolean useCoverage) 
-	 {
+	/**
+	 * Set if coverage ratio is used or not in the evaluation of individuals
+	 * 
+	 * @param useCoverage TRUE if coverage ratio is included in fitness and FALSE otherwise
+	 */
+	public void setUseCoverage(boolean useCoverage) 
+	{
 		this.useCoverage = useCoverage;
-	 }
+	}
 	
 	/////////////////////////////////////////////////////////////////
 	// ------------------------ Overwriting AbstractEvaluator methods
@@ -223,7 +293,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	Evaluation results;
   	       	  	
   	       	// Obtain ensembleMatrix
-  	       	byte [][] ensembleMatrix = classifier.getEnsembleMatrix();
   	       	String s = classifier.getOrderedStringFromEnsembleMatrix();
   	       	  	
   	       	double fitness = -1;
@@ -245,56 +314,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 	       			finalMeasure = fitness;
 	       		}
 
-  	       	  		
-     	  		if(phiInFitness)
-     	  		{
-     	  			/*
-	       	  		 * Introduces Phi correlation in fitness
-	       	  		 * 	Maximize [(1-HLoss) + PhiSum]
-	       	  		 */
-	       	  			   	  	       	  			
-	       	  		double phiTotal = 0;
-//	       	  		double minPhi = Double.MAX_VALUE;
-	       	  		
-	       	  		double sumPhi, phiActual;
-	       	  		int active;
-
-	       	  		//Calculate sumPhi for all base classifiers
-	       	  		for(int c=0; c<getNumberClassifiers(); c++)
-	       	  		{
-	       	  			sumPhi = 0;
-	       	  			active = 0;
-	       	  			//calculate sum of phi label correlations for a base classifier
-	       	  			for(int i=0; i<getDatasetTrain().getNumLabels()-1; i++)
-	       	  			{
-	       	  				if(ensembleMatrix[c][i] == 1)
-	       	  					active ++;
-	       	  					
-	       	  				for(int j=i+1; j<getDatasetTrain().getNumLabels(); j++)
-	       	  				{
-	       	  					if((ensembleMatrix[c][i] == 1) && (ensembleMatrix[c][j] == 1))
-	       	  					{
-	       	  						if(!Double.isNaN(phiMatrix[i][j]))
-	       	  							sumPhi += Math.abs(phiMatrix[i][j]);
-	       	  					}
-	       	  				}
-	       	  			}
-	       	  			
-	       	  			phiActual = sumPhi/(double)active;
-//	       	  			if(phiActual<minPhi)
-//	       	  				minPhi = phiActual;
-	       	  			phiTotal += phiActual;
-	       	  		}
-	       	  		
-	       	  		phiTotal = phiTotal/(double)getNumberClassifiers();
-	       	  		System.out.println("phiTotal: " + phiTotal);
-	       	  		//Maximize [(1-HLoss) + PhiSum]
-	       	  		fitness = fitness + phiTotal;
-	       	  			
-//	       	  		System.out.println("minPhi: " + minPhi);
-//	       	  		fitness = fitness + minPhi;
-     	  		}
-     	  			
      	  		if(useCoverage)
      	  		{
      	  			int [] v = classifier.getVotesPerLabel();
@@ -315,7 +334,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
      				if(finalInd) {
      					System.out.println("distance: " + distance + " -> fitness: " + fitness);
      				}
-     				//Maximize [(1-HLoss) + (1-coverage)]
+     				//Maximize [(ExF) + (1-coverage)]
      				if(finalInd) {
     	       			finalCoverage = distance;
     	       		}
@@ -332,8 +351,7 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 				}
   	       	}
   	       	  	
-//  	       	  	System.out.println("Fitness: " + fitness);
-  	       	  	ind.setFitness(new SimpleValueFitness(fitness));
+  	       	ind.setFitness(new SimpleValueFitness(fitness));
 
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();

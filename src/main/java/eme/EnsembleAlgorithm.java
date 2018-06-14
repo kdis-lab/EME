@@ -13,7 +13,7 @@ import net.sf.jclec.IIndividual;
 import net.sf.jclec.algorithm.classic.SGE;
 import net.sf.jclec.binarray.BinArrayIndividual;
 import net.sf.jclec.selector.BettersSelector;
-import net.sf.jclec.selector.WorsesSelector;
+//import net.sf.jclec.selector.WorsesSelector;
 
 import org.apache.commons.configuration.Configuration;
 
@@ -21,65 +21,88 @@ import eme.mut.IntraModelMutator;
 import eme.mut.PhiBasedIntraModelMutator;
 import eme.rec.UniformModelCrossover;
 
-
+/**
+ * @author Jose M. Moyano <jmoyano@uco.es>
+ *
+ * Class implementing the evolutionary algorithm EME. It extends the SGE class from JCLEC.
+ */
 public class EnsembleAlgorithm extends SGE
 {
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------- Serialization constant
 	/////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Serialization constant
+	 */
 	private static final long serialVersionUID = -2649346083463795286L;
 	
 	/////////////////////////////////////////////////////////////////
 	// --------------------------------------------------- Properties
 	/////////////////////////////////////////////////////////////////
 	
-	/* Dataset to build the ensembles */
+	/**
+	 * Dataset to build the ensembles */
 	private MultiLabelInstances datasetTrain;
 	
-	/* Dataset to evaluate the individuals */
+	/**
+	 *  Dataset to evaluate the individuals */
 	private MultiLabelInstances datasetValidation;
 	
-	/* Dataset to test the final ensemble */
+	/**
+	 *  Dataset to test the final ensemble */
 	private MultiLabelInstances datasetTest;
 	
-	/* Final ensemble classifier */
+	/**
+	 *  Final ensemble classifier */
 	private EnsembleClassifier classifier;
 
-	/* Number of base classifiers of the ensemble */
+	/**
+	 *  Number of base classifiers of the ensemble */
 	private int numberClassifiers;
 	
-	/* Number of active labels in each base classifier */
+	/**
+	 * Number of active labels in each base classifier */
 	private int maxNumberLabelsClassifier;
 
-	/* Threshold for voting process prediction*/
+	/**
+	 *  Threshold for voting process prediction*/
 	private double predictionThreshold;
 	
-	/* Indicates if the number of active labels is variable for each base classifier */
+	/** 
+	 * Indicates if the number of active labels is variable for each base classifier */
 	private boolean variable;
 	
-	/* Table that stores all base classifiers built */
+	/**
+	 * Table that stores all built base classifiers */
 	private Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
-	/* Table that stores the fitness of all evaluated individuals */
+	/**
+	 * Table that stores the fitness of all evaluated individuals */
 	private Hashtable<String, Double> tableFitness;
 	
-	/* Indicates if a validation set is used to evaluate the individuals */
+	/**
+	 *  Indicates if a validation set is used to evaluate the individuals
+	 *  If it is TRUE, a different dataset is used to build and to evaluate the individuals
+	 *  	The dataset to evaluate may be totally different or include more instances to the training one
+	 *  If it is FALSE, the same dataset is used to build and to evaluate the individuals
+	 */
 	private boolean useValidationSet;
-	
-	/* Indicates if the individual fitness contemplates the phi correlation between labels */
-	private boolean phiInFitness;
 
-	/* Indicates if the coverage is used in fitness */
+	/**
+	 *  Indicates if the coverage ratio is used in fitness */
 	private boolean useCoverage;
 	
-	/* Coverage ratio of the final ensemble */
+	/**
+	 *  Coverage ratio of the final ensemble */
 	public double finalEnsembleCoverage;
 	
-	/* Multi-label evaluation measure of the final ensemble */
+	/**
+	 *  Multi-label evaluation measure of the final ensemble */
 	public double finalEnsembleMeasure;
 	
-	/* Fitness of the final ensemble */
+	/**
+	 *  Fitness of the final ensemble */
 	public double finalEnsembleFitness;
 	
 	/////////////////////////////////////////////////////////////////
@@ -88,8 +111,7 @@ public class EnsembleAlgorithm extends SGE
 
 	/**
 	 * Empty (default) constructor
-	 */
-	
+	 */	
 	public EnsembleAlgorithm() 
 	{
 		super();
@@ -102,55 +124,114 @@ public class EnsembleAlgorithm extends SGE
 	// ----------------------------------------------- Public methods
 	/////////////////////////////////////////////////////////////////
 	
+	/**
+	 * Get the train dataset
+	 * 
+	 * @return The dataset used for training the models
+	 */
 	public MultiLabelInstances getDatasetTrain()
 	{
 		return datasetTrain;
 	}
 	
+	/**
+	 * Get the validation dataset
+	 * 
+	 * @return The dataset used for the evaluation of the individuals
+	 */
 	public MultiLabelInstances getDatasetValidation()
 	{
 		return datasetValidation;
 	}
 	
+	/**
+	 * Get the test dataset
+	 * 
+	 * @return The dataset used for testing the final ensemble obtained by EME
+	 */
 	public MultiLabelInstances getDatasetTest()
 	{
 		return datasetTest;
 	}
 	
+	/**
+	 * Get the ensemble classifier obtained by EME
+	 * 
+	 * @return Ensemble classifier
+	 */
 	public EnsembleClassifier getClassifier()
 	{
 		return classifier;
 	}
 		
+	/**
+	 * Get the number of classifiers in the ensemble
+	 * 
+	 * @return Number of classifiers in the ensemble
+	 */
 	public int getNumberClassifiers()
 	{
 		return numberClassifiers;
 	}
 	
+	/**
+	 * Get the max number of labels in each base classifier (k)
+	 * At the moment, the number of labels for each classifier is fixed, but it could be variable
+	 * 
+	 * @return Number of labels in each base classifier
+	 */
 	public int getMaxNumberLabelsClassifier()
 	{
 		return maxNumberLabelsClassifier;
 	}
 	
+	/**
+	 * Get the threshold used for prediction in the ensemble
+	 * 
+	 * @return Prediction threshold
+	 */
 	public double getPredictionThreshold()
 	{
 		return predictionThreshold;
 	}
 	
-	public boolean getVariable()
+	/**
+	 * Get if the number of labels in each base classifier is variable
+	 * At the moment, only the fixed version has been proved
+	 * 
+	 * @return FALSE if the number of labels for each base classifier is fixed, and TRUE if it wold be variable
+	 */
+	public boolean isVariable()
 	{
 		return variable;
 	}
 	
+	/**
+	 * Get if the validation dataset is used
+	 * 
+	 * @return TRUE if a different dataset is used to evaluate the individuals, and FALSE if the same than to build them is used
+	 */
 	public boolean getUseValidationSet()
 	{
 		return useValidationSet;
 	}
 	
+	/**
+	 * Get the size of the TableClassifiers.
+	 * That means the number of base classifiers that have been built over the evolutionary process.
+	 * 
+	 * @return Size of the table storing the built base classifiers
+	 */
 	public int getTableClassifiersSize() {
 		return tableClassifiers.size();
 	}
 	
+	/**
+	 * Get the size of the TableFitness.
+	 * That means the number of individuals that have been evaluated over the evolutionary process.
+	 * 
+	 * @return Size of the table storing the fitness of the individuals
+	 */
 	public int getTableFitnessSize() {
 		return tableFitness.size();
 	}
@@ -159,7 +240,6 @@ public class EnsembleAlgorithm extends SGE
 	/**
 	 * {@inheritDoc}
 	 */
-
 	@Override
 	public void configure(Configuration configuration)
 	{
@@ -211,7 +291,6 @@ public class EnsembleAlgorithm extends SGE
 			numberClassifiers = configuration.getInt("number-classifiers"); 
 			predictionThreshold = configuration.getDouble("prediction-threshold");
 			
-			phiInFitness = configuration.getBoolean("phi-in-fitness");
 			useCoverage = configuration.getBoolean("use-coverage");
 			
 			// Set provider settings
@@ -228,12 +307,11 @@ public class EnsembleAlgorithm extends SGE
 			((EnsembleMLCEvaluator) evaluator).setPredictionThreshold(predictionThreshold);
 			((EnsembleMLCEvaluator) evaluator).setVariable(variable);
 			((EnsembleMLCEvaluator) evaluator).setTable(tableClassifiers);
-			((EnsembleMLCEvaluator) evaluator).setTableMeasures(tableFitness);
+			((EnsembleMLCEvaluator) evaluator).setTableFitness(tableFitness);
 			((EnsembleMLCEvaluator) evaluator).setRandGenFactory(randGenFactory);
-			((EnsembleMLCEvaluator) evaluator).setPhiInFitness(phiInFitness);
 			((EnsembleMLCEvaluator) evaluator).setUseCoverage(useCoverage);
 
-			// Set genetic operator settingsS
+			// Set genetic operator settings
 			((IntraModelMutator) mutator.getDecorated()).setNumberLabels(numberLabels);
 			((UniformModelCrossover) recombinator.getDecorated()).setNumberLabels(numberLabels);
 			
@@ -246,30 +324,22 @@ public class EnsembleAlgorithm extends SGE
 				
 				s.printPhiCorrelations();
 				
-				// Send Phi matrix to the mutator if it needs it
-				if(mutator.getDecorated().getClass().toString().contains("PhiBasedIntraModelMutator"))
-					((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
-				
-				//Send phi matrix to evaluator
-				if(phiInFitness)
-					((EnsembleMLCEvaluator) evaluator).setPhiMatrix(phi);
+				// Send Phi matrix to the mutator
+				((PhiBasedIntraModelMutator) mutator.getDecorated()).setPhiMatrix(phi);
 			}
-			
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	
+		
 	/////////////////////////////////////////////////////////////////
 	// -------------------------------------------- Protected methods
 	/////////////////////////////////////////////////////////////////
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	protected void doControl()
 	{				
@@ -289,6 +359,7 @@ public class EnsembleAlgorithm extends SGE
 			byte[] genotype = ((BinArrayIndividual) bestInd).getGenotype();
 
 			classifier = new EnsembleClassifier(maxNumberLabelsClassifier, numberClassifiers, predictionThreshold, variable, new LabelPowerset(new J48()), genotype, tableClassifiers, randGenFactory.createRandGen());			
+			//Indicate that it is the final individual, to export some measures
 			((EnsembleMLCEvaluator) evaluator).finalInd = true;
 			
 			ArrayList<IIndividual> finalList = new ArrayList<IIndividual>();
