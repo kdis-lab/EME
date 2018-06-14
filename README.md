@@ -7,7 +7,7 @@ More information about this algorithm can be find in the following article:
 
 If you use EME, please cite the paper. Further, a [bibtex citation file](https://github.com/i02momuj/EvolutionaryMultiLabelEnsemble/blob/master/citation.bib) is also provided.
 
-In this repository we provide the code of EME, distributed under the GPLv3 License. EME has been implemented using JCLEC [[Ven08]](#Ven08), Mulan [[Tso11]](#Tso11), and Weka [[Hal09]](#Hal09)  libraries. Besides, the last release (v 1.2) [] provides the executable jar to execute EME and also the javadoc.
+In this repository we provide the code of EME, distributed under the GPLv3 License. EME has been implemented using JCLEC [[Ven08]](#Ven08), Mulan [[Tso11]](#Tso11), and Weka [[Hal09]](#Hal09)  libraries. Besides, the latest release [(v 1.2)](https://github.com/i02momuj/EvolutionaryMultiLabelEnsemble/releases/tag/v1.2) provides the executable jar to execute EME and also the javadoc.
 
 To execute EME, the following command have to be executed:
 ```sh
