@@ -98,6 +98,8 @@ Then, several more characteristics of the evolutionary algorithm could be modifi
 * The ```<evaluator>``` tag determines the class of the evaluator used for evaluating the individuals. Since only one evaluator has been implemented in EME, its default value is ```eme.EnsembleMLCEvaluator```.
 * The ```<provider>``` tag determines the class that generates the initial population of individuals. By default, the ```eme.EnsembleMLCCreator``` class is used.
 
+Two multi-label datasets (*emotions* and *yeast*) have been included in the repository as example; however, a wide variety of dataset are available at the [KDIS Research Group Repository](http://www.uco.es/kdis/mllresources/). Further, two example configuration files (*Experiment_emotions.cfg* and *Experiment_yeast.cfg*) are also provided.
+
 ### References
 
 <a name="Hal09"></a>**[Hal09]** M. Hall, E. Frank, G. Holmes, B. Pfahringer, P. Reutemann, and I. H. Witten. (2009). The WEKA data mining software: an update. ACM SIGKDD explorations newsletter, 11(1), 10-18.
