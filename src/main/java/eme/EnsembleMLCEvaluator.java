@@ -312,8 +312,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	{
   	       		//Calculate base fitness (ExF) with 3-folds CV
   	       		MultipleEvaluation mResults = eval.crossValidate(classifier, datasetTrain, measures, 3, tableClassifiers);
-  	       		
-//  	       		fitness = results.getMeasures().get(0).getValue();
   	       		//Get mean fitness among all folds
 	       		fitness = mResults.getMean("Example-Based F Measure");
   	       		if(finalInd) {

@@ -338,7 +338,7 @@ public class Evaluator {
         Evaluation[] evaluation = new Evaluation[someFolds];
 
         Instances workingSet = new Instances(data.getDataSet());
-        workingSet.randomize(new Random(seed));
+//        workingSet.randomize(new Random(seed));
         for (int i = 0; i < someFolds; i++) {
 //            System.out.println("Fold " + (i + 1) + "/" + someFolds);
             try {
@@ -350,7 +350,6 @@ public class Evaluator {
                 MultiLabelLearner clone = learner.makeCopy();
                 
                 //Pass to the classifier the table and the id of the fold
-                ((EnsembleClassifier)clone).setTableClassifiers(tableClassifiers);
                 ((EnsembleClassifier)clone).setFoldID(i);
                 
                 clone.build(mlTrain);
