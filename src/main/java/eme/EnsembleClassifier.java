@@ -100,11 +100,17 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	
 	/**
 	 *  Table that stores all base classifiers built */
-	private Hashtable<String, MultiLabelLearner> tableClassifiers;
+	private static Hashtable<String, MultiLabelLearner> tableClassifiers;
 	
 	/**
 	 *  Array with number of votes of the ensemble for each label */
 	private int [] votesPerLabel;
+	
+	/**
+	 * Identifier of the fold with which the classifier is created.
+	 * This is useful in order to store the models in the table.
+	 */
+	private int foldID = 0;
 
 	
 
@@ -133,7 +139,9 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    this.variable = variable;
 		this.genotype = genotype;
 		this.tableClassifiers = tableClassifiers;
-		this.randGen = randGen;		
+		this.randGen = randGen;
+		
+		initializeIndividual();
 	}
 	
 	/**
@@ -157,6 +165,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.genotype = genotype;
 		this.tableClassifiers = tableClassifiers;
 		this.randGen = randGen;
+		
+		initializeIndividual();
 	}
 	
 	/**
@@ -179,6 +189,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    this.variable = variable;
 		this.tableClassifiers = tableClassifiers;
 		this.randGen = randGen;
+		
+		initializeIndividual();
 	}
 	
 	/**
@@ -202,6 +214,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		this.genotype = genotype;
 		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
 		this.randGen = randGen;
+		
+		initializeIndividual();
 	}
 	
 	/**
@@ -223,9 +237,29 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 	    this.variable = variable;
 		tableClassifiers = new Hashtable<String, MultiLabelLearner>();
 		this.randGen = randGen;
+		
+		initializeIndividual();
 	}
 		
-	
+	/**
+	 * Initialize an individual with genotype, votes per label and Ensemble matrix
+	 */
+	private void initializeIndividual() {
+		numLabels = genotype.length / numClassifiers;
+		
+		votesPerLabel = new int[numLabels];
+		for(int i=0; i<genotype.length; i++)
+		{
+			votesPerLabel[i%numLabels] += genotype[i];
+		}
+
+		if(genotype==null){
+			initEnsembleMatrix(); 
+		}
+		else{
+			this.genotypeToEnsembleMatrix();
+		}
+	}
 	
 	/////////////////////////////////////////////////////////////////
 	// ----------------------------------------------- Public methods
@@ -355,6 +389,24 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		return votesPerLabel;
 	}
 	
+	/**
+	 * Set the table that stores the classifiers already built
+	 * 
+	 * @param tableClassifiers Hashtable storing the already built classifiers
+	 */
+	public void setTableClassifiers(Hashtable<String, MultiLabelLearner> tableClassifiers) {
+		this.tableClassifiers = tableClassifiers;
+	}
+	
+	/**
+	 * Sets the id of the fold with which the classifier has been built.
+	 * 
+	 * @param i id of the fold
+	 */
+	public void setFoldID(int i) {
+		this.foldID = i;
+	}
+	
 	@Override
 	public String toString()
 	{
@@ -437,16 +489,16 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 		   Ensemble = new MultiLabelLearner[numClassifiers];		
 		   Filters = new Remove[numClassifiers];	
 		   
-		   votesPerLabel = new int[numLabels];
-		   for(int i=0; i<genotype.length; i++)
-		   {
-			   votesPerLabel[i%numLabels] += genotype[i];
-		   }
-
-		   if(genotype==null)
-			  initEnsembleMatrix(); 
-		   else
-			 this.genotypeToEnsembleMatrix();
+//		   votesPerLabel = new int[numLabels];
+//		   for(int i=0; i<genotype.length; i++)
+//		   {
+//			   votesPerLabel[i%numLabels] += genotype[i];
+//		   }
+//
+//		   if(genotype==null)
+//			  initEnsembleMatrix(); 
+//		   else
+//			 this.genotypeToEnsembleMatrix();
 		   
 		   Instances instances = null;
 		   for(int i = 0; i < numClassifiers; i++)
@@ -457,13 +509,9 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
 				// build a MultiLabelLearner for the selected label subset;
 				try {
 					
-					//Try to get a classifier from the tableClassifiers					
-					String s = new String();				
-					for(int j=0; j<numLabels; j++)
-					{
-						s = s+EnsembleMatrix[i][j];
-					}
-					
+					//Try to get a classifier from the tableClassifiers			
+					String s = Arrays.toString(EnsembleMatrix[i]) + foldID;
+
 					if(tableClassifiers.get(s) == null)
 					{
 						//Build the classifier and put in the table
@@ -697,15 +745,8 @@ public class EnsembleClassifier extends MultiLabelMetaLearner
      	  	
 		// EnsembleMatrix to Strings array
      	for(int i=0; i<numClassifiers; i++)
-     	{
-     		String s = new String();
-     			
-     		for(int j=0; j<numLabels; j++)
-     		{
-     			s = s+EnsembleMatrix[i][j];
-     		}
-     	 		
-     		matrix[i] = s;
+     	{    	 		
+     		matrix[i] = Arrays.toString(EnsembleMatrix[i]);
      	}
 
      	// Ordered list of rows of the EnsembleMatrix

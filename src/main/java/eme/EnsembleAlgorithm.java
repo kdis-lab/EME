@@ -432,6 +432,8 @@ public class EnsembleAlgorithm extends SGE
 			finalEnsembleFitness = ((EnsembleMLCEvaluator) evaluator).finalFitness;
 			
 			try {	
+//				tableClassifiers.clear();
+				classifier.setTableClassifiers(new Hashtable<String, MultiLabelLearner>());
 				classifier.build(datasetTrain);
 				
 				/* Print the final ensemble */

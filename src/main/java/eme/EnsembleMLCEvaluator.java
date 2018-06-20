@@ -19,8 +19,8 @@ import java.util.List;
 import mulan.data.MultiLabelInstances;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.transformation.LabelPowerset;
-import mulan.evaluation.Evaluation;
 import mulan.evaluation.Evaluator;
+import mulan.evaluation.MultipleEvaluation;
 import mulan.evaluation.measure.ExampleBasedFMeasure;
 import mulan.evaluation.measure.Measure;
 import weka.classifiers.trees.J48;
@@ -293,15 +293,10 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
 		
 		Evaluator eval = new Evaluator();
 
-        try {
-        	// Build classifier using train data
-        	classifier.build(datasetTrain);
-        	    
+        try {      	    
         	List<Measure> measures = new ArrayList<Measure>();  
         	//Add only the measure to use
-//  	       	measures.add(new HammingLoss());
   	       	measures.add(new ExampleBasedFMeasure());
-  	       	Evaluation results;
   	       	  	
   	       	// Obtain ensembleMatrix
   	       	String s = classifier.getOrderedStringFromEnsembleMatrix();
@@ -315,12 +310,12 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
   	       	}
   	       	else
   	       	{
-  	       		//Calculate base fitness (1-HLoss) with validation set
-  	       		results = eval.evaluate(classifier, datasetValidation, measures);
-//  	       		MultipleEvaluation mResults = eval.crossValidate(classifier, datasetTrain, measures, 3);
+  	       		//Calculate base fitness (ExF) with 3-folds CV
+  	       		MultipleEvaluation mResults = eval.crossValidate(classifier, datasetTrain, measures, 3, tableClassifiers);
   	       		
-  	       		fitness = results.getMeasures().get(0).getValue();
-//	       		fitness = mResults.getMean("Example-Based F Measure");
+//  	       		fitness = results.getMeasures().get(0).getValue();
+  	       		//Get mean fitness among all folds
+	       		fitness = mResults.getMean("Example-Based F Measure");
   	       		if(finalInd) {
 	       			finalMeasure = fitness;
 	       		}
@@ -334,7 +329,6 @@ public class EnsembleMLCEvaluator extends AbstractParallelEvaluator
      	  				expectedVotes += v[i];
      	  			}
      	  			expectedVotes = expectedVotes/v.length;
-     	  			//System.out.println("expectedVotes: " + expectedVotes);
      	  			double distance = 0;
      				for(int i=0; i<getDatasetTrain().getNumLabels(); i++)
      				{

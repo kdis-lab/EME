@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<experiment>
+	 <process algorithm-type="eme.EnsembleAlgorithm">
+		<rand-gen-factory seed="10"/>
+		 
+		<parents-selector type="net.sf.jclec.selector.TournamentSelector">
+			<tournament-size>2</tournament-size>
+		</parents-selector>
+		 
+		<population-size>50</population-size>
+		<max-of-generations>25</max-of-generations>		 
+		 
+		<recombinator rec-prob="0.8" type="eme.rec.UniformModelCrossover"/>
+		<mutator mut-prob="0.2" type="eme.mut.PhiBasedIntraModelMutator"/>
+		 
+		<number-classifiers>12</number-classifiers>
+		<number-labels-classifier>3</number-labels-classifier>
+		<prediction-threshold>0.5</prediction-threshold>
+		<use-coverage>true</use-coverage>
+		 
+		<dataset>
+			  <train-dataset>data/emotions/emotions_train_1.arff</train-dataset>
+			  <test-dataset>data/emotions/emotions_test_1.arff</test-dataset>
+			  <xml>data/emotions/emotions.xml</xml>
+		  </dataset>
+		
+		<listener>
+			<report-dir-name>reports/EnsembleMLC</report-dir-name>
+			<global-report-name>summaryEnsembleMLC</global-report-name>
+			<report-frequency>1</report-frequency>	
+		</listener>
+	 </process>
+</experiment>
